@@ -16,9 +16,13 @@ body,
   height: 100%;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
-  font-family: "Inter", ui-sans-serif, system-ui;
+  font-family: "Sora", ui-sans-serif, system-ui;
   transition: background-color 200ms ease, color 200ms ease;
 }
 

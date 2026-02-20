@@ -5,7 +5,7 @@ export default {
     extend: {
       fontFamily: {
         display: ["Sora", "ui-sans-serif", "system-ui"],
-        body: ["Inter", "ui-sans-serif", "system-ui"],
+        body: ["Sora", "ui-sans-serif", "system-ui"],
       },
       boxShadow: {
         soft: "0 10px 40px rgba(0,0,0,0.18)",
