@@ -1,10 +1,24 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { pricingTiers, PricingTier } from '../../lib/data/pricing';
+import { redirectToCheckout } from '../../lib/stripe';
 import ScrollReveal from '../animations/ScrollReveal';
 
 function PricingCard({ tier, annual, index }: { tier: PricingTier; annual: boolean; index: number }) {
     const price = annual ? tier.price.annual : tier.price.monthly;
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleCheckout = async () => {
+        setIsLoading(true);
+        try {
+            await redirectToCheckout({ tier: tier.tier });
+        } catch (error) {
+            console.error('Checkout error:', error);
+            alert('Failed to initiate checkout. Please try again.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     return (
         <ScrollReveal delay={index * 0.1}>
@@ -62,15 +76,18 @@ function PricingCard({ tier, annual, index }: { tier: PricingTier; annual: boole
 
                 {/* CTA */}
                 <button
+                    onClick={handleCheckout}
+                    disabled={isLoading}
                     className={`
             w-full py-3 rounded-xl font-semibold text-sm transition-all duration-200
             ${tier.featured
                             ? 'btn-primary justify-center'
                             : 'bg-bg-hover border border-border-subtle text-text-primary hover:bg-bg-elevated hover:border-accent/30'
                         }
+            ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}
           `}
                 >
-                    {tier.cta} →
+                    {isLoading ? 'Loading...' : `${tier.cta} →`}
                 </button>
             </motion.div>
         </ScrollReveal>

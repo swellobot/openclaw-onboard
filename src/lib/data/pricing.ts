@@ -1,5 +1,6 @@
 export interface PricingTier {
     name: string;
+    tier: string;
     price: { monthly: number; annual: number };
     description: string;
     features: string[];
@@ -11,6 +12,7 @@ export interface PricingTier {
 export const pricingTiers: PricingTier[] = [
     {
         name: 'Starter',
+        tier: 'freemium',
         price: { monthly: 29, annual: 23 },
         description: 'Perfect for trying out your personal AI agent.',
         features: [
@@ -26,6 +28,7 @@ export const pricingTiers: PricingTier[] = [
     },
     {
         name: 'Pro',
+        tier: 'pro',
         price: { monthly: 59, annual: 47 },
         description: 'For power users who want the full experience.',
         features: [
@@ -45,6 +48,7 @@ export const pricingTiers: PricingTier[] = [
     },
     {
         name: 'Enterprise',
+        tier: 'luxury',
         price: { monthly: 129, annual: 103 },
         description: 'Multiple agents, custom models, full control.',
         features: [
