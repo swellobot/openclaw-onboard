@@ -35,9 +35,7 @@ const TIER_PRICES = {
 const app = express();
 const PORT = 3001;
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-    apiVersion: '2024-12-18.acacia',
-});
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 app.use(cors());
 app.use(express.json());
