@@ -18,7 +18,7 @@ export const pricingTiers: PricingTier[] = [
         features: [
             '1 personal agent',
             '1 messaging channel',
-            'Claude Sonnet 4.5',
+            'Claude Sonnet 4.6',
             '500 messages/day',
             'Research, writing, reminders',
             'Daily memory',
@@ -34,7 +34,7 @@ export const pricingTiers: PricingTier[] = [
         features: [
             '1 personal agent',
             'Unlimited messaging channels',
-            'Opus 4.5 + Sonnet auto-routing',
+            'Opus 4.6 + Sonnet auto-routing',
             'Unlimited messages',
             'All skills & integrations',
             'Long-term vector memory',

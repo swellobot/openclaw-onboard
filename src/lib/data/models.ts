@@ -17,7 +17,7 @@ export interface AIModel {
 export const models: AIModel[] = [
     {
         id: 'sonnet-45',
-        name: 'Claude Sonnet 4.5',
+        name: 'Claude Sonnet 4.6',
         provider: 'Anthropic',
         description: 'Fast, smart, and affordable. Great for everyday tasks.',
         capabilities: { reasoning: 75, speed: 90, creativity: 70, breadth: 70, multimodal: 60 },
@@ -26,7 +26,7 @@ export const models: AIModel[] = [
     },
     {
         id: 'opus-45',
-        name: 'Claude Opus 4.5',
+        name: 'Claude Opus 4.6',
         provider: 'Anthropic',
         description: 'Best-in-class reasoning. Handles complex, nuanced tasks.',
         capabilities: { reasoning: 95, speed: 65, creativity: 90, breadth: 85, multimodal: 75 },

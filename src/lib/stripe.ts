@@ -1,27 +1,19 @@
-/**
- * Stripe checkout via Payment Links.
- * No backend needed — just redirects to pre-created Stripe Payment Link URLs.
- */
-
-const PAYMENT_LINKS: Record<string, string> = {
-    freemium: import.meta.env.VITE_STRIPE_LINK_FREEMIUM || '',
-    pro: import.meta.env.VITE_STRIPE_LINK_PRO || '',
-    luxury: import.meta.env.VITE_STRIPE_LINK_LUXURY || '',
-};
-
 export interface CheckoutParams {
     tier: string;
 }
 
 export async function redirectToCheckout({ tier }: CheckoutParams) {
-    const paymentLink = PAYMENT_LINKS[tier];
+    const res = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tier }),
+    });
 
-    if (!paymentLink) {
-        throw new Error(
-            `No payment link found for tier "${tier}". ` +
-            `Add VITE_STRIPE_LINK_${tier.toUpperCase()} to .env.local`
-        );
+    if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || 'Failed to create checkout session');
     }
 
-    window.location.href = paymentLink;
+    const { url } = await res.json();
+    window.location.href = url;
 }

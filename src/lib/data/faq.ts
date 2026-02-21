@@ -14,7 +14,7 @@ export const faqItems: FAQItem[] = [
     },
     {
         question: 'What AI models can I use?',
-        answer: 'Starter plans use Claude Sonnet 4.5 — fast and capable for daily tasks. Pro plans include intelligent auto-routing between Claude Opus 4.5 and Sonnet. Enterprise users can choose from Claude Opus 4.6, GPT-5.2, Gemini 2.5 Pro, or even run local models via Ollama for maximum privacy.',
+        answer: 'Starter plans use Claude Sonnet 4.6 — fast and capable for daily tasks. Pro plans include intelligent auto-routing between Claude Opus 4.6 and Sonnet. Enterprise users can choose from Claude Opus 4.6, GPT-5.2, Gemini 2.5 Pro, or even run local models via Ollama for maximum privacy.',
     },
     {
         question: 'Can I switch messaging channels?',

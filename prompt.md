@@ -67,7 +67,7 @@ Design the pricing around these tiers (finalize exact numbers, but this is the s
 ### Starter — $29/month
 - 1 personal agent
 - 1 messaging channel
-- Claude Sonnet 4.5 (fast, smart, affordable)
+- Claude Sonnet 4.6 (fast, smart, affordable)
 - Basic skills (research, writing, reminders, summarization)
 - 500 messages/day
 - Daily memory
@@ -76,7 +76,7 @@ Design the pricing around these tiers (finalize exact numbers, but this is the s
 ### Pro — $59/month (recommended)
 - 1 personal agent
 - Unlimited messaging channels (WhatsApp + Telegram + iMessage simultaneously)
-- Claude Opus 4.5 for complex tasks, Sonnet for routine (intelligent auto-routing)
+- Claude Opus 4.6 for complex tasks, Sonnet for routine (intelligent auto-routing)
 - All skills (calendar, email drafting, browser, file access, cron jobs)
 - Unlimited messages
 - Long-term memory with vector search
