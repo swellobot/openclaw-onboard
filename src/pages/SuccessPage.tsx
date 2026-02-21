@@ -105,33 +105,13 @@ export default function SuccessPage() {
                                 </p>
                             )}
 
-                            {session?.subscription_status && (
-                                <p className="text-xs text-text-muted mb-6 capitalize">
-                                    Subscription: {session.subscription_status}
-                                </p>
-                            )}
-
-                            {sessionId && (
-                                <p className="text-xs text-text-muted mb-6 font-mono break-all">
-                                    Session: {sessionId}
-                                </p>
-                            )}
-
-                            {/* CTA Buttons */}
-                            <div className="flex flex-col gap-3">
-                                <button
-                                    onClick={() => navigate('/wizard')}
-                                    className="btn-primary justify-center"
-                                >
-                                    Get Started with Setup
-                                </button>
-                                <button
-                                    onClick={() => navigate('/')}
-                                    className="btn-secondary justify-center"
-                                >
-                                    Return to Home
-                                </button>
-                            </div>
+                            {/* CTA */}
+                            <button
+                                onClick={() => navigate(`/wizard/${crypto.randomUUID()}`)}
+                                className="btn-primary justify-center w-full"
+                            >
+                                Get Started with Setup
+                            </button>
 
                             {/* Next Steps */}
                             <div className="mt-8 pt-6 border-t border-border-subtle text-left">

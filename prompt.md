@@ -1,241 +1,596 @@
-# Prompt: Design & Build the AgentHost Website
+# Agent Onboarding System — Developer Specification
 
-## Context
+## Overview
 
-You are the lead developer and designer for **AgentHost** (working name — suggest a better one if you find one) — a hosted personal AI agent platform built on top of OpenClaw. The product lets non-technical users get a fully configured personal AI agent on their phone in under 15 minutes. No terminal. No config files. No API keys. Just pay, answer some questions through a fun conversational onboarding, and start chatting with your personal agent on WhatsApp, Telegram, iMessage, or any other messaging platform.
+This document specifies the onboarding flow that starts immediately after a successful purchase. The user arrives on a success page with their `session_id`, and the onboarding experience begins. The goal: by the end of this flow, we have everything needed to configure and deploy their personal AI agent (OpenClaw-based), without the user ever touching a terminal, markdown file, or config file.
 
-You have full internet access. Before designing anything, research current design trends in 2025-2026 for SaaS landing pages, AI product websites, and premium consumer tech products. Look at sites like:
-- Linear.app (clean, dark, minimal)
-- Raycast.com (developer-meets-consumer)
-- Arc.net (unconventional, personality-driven)
-- Superhuman.com (premium feel, waitlist energy)
-- Notion.so (clean, illustration-driven)
-- Vercel.com (dark, modern, technical credibility)
-- Perplexity.ai (clean AI product)
-- Framer templates tagged "AI" and "SaaS" for inspiration on layout patterns
-
-Find unconventional interaction patterns, scroll animations, and visual approaches that break away from the standard "hero → features → pricing → footer" SaaS template. This should feel premium and different — not like another Tailwind template.
+**The user persona we're designing for:** A 45-year-old father who has never heard of "agents" but is curious enough to buy one. He doesn't know what SOUL.md or AGENTS.md means. He just wants a thing that helps him with stock analysis, or whatever he bought it for.
 
 ---
 
-## The Product
-
-### What It Is
-A hosted OpenClaw-as-a-Service platform. Users get their own personal AI agent that:
-- Lives on their phone via WhatsApp, Telegram, iMessage, Slack, Discord, Signal, or WebChat
-- Has persistent memory across conversations (remembers everything about them)
-- Can proactively reach out with reminders, ideas, check-ins
-- Can do tasks: research, draft emails, manage calendar, summarize content, think through problems
-- Learns and improves over time as it accumulates context about the user
-- Runs 24/7 on our infrastructure — the user never touches a server
-
-### How Onboarding Works (Critical — This Is the Core UX Story)
-1. **User lands on website → picks a plan → pays**
-2. **Selects their preferred messaging channel** (WhatsApp, Telegram, iMessage, etc.)
-3. **Connects the channel** (QR code scan for WhatsApp, bot link for Telegram, etc.)
-4. **Gets paired with our Onboarding Agent** — a temporary, specialized agent whose only job is to get to know the user through natural conversation
-5. **The Onboarding Agent conducts a 10-15 minute conversational interview:**
-   - Starts casual: "What did you do today?" "What's stressing you out?" — extracting real context while feeling like a chat
-   - Personality calibration through A/B preference testing: "Which of these two responses would you rather get from your agent?" — way more accurate than asking "do you want formal or casual?"
-   - Encourages voice messages: "Just talk to me for a minute about yourself" — people share 10x more context through voice than typing
-   - Discovers use cases naturally: "If your agent could handle one annoying thing in your life, what would it be?"
-   - Sets boundaries: "Should your agent ever message people on your behalf without asking?"
-   - Names the agent: "What do you want to call me? Or want me to suggest something?"
-6. **Behind the scenes, the Onboarding Agent generates all OpenClaw workspace files:**
-   - `USER.md` — who the human is (extracted from conversation)
-   - `SOUL.md` — agent personality, tone, values (derived from preference tests)
-   - `IDENTITY.md` — agent name, emoji, theme
-   - `AGENTS.md` — operating contract, boundaries, guardrails
-   - `TOOLS.md` — enabled capabilities based on use cases
-   - `MEMORY.md` — seeded with everything learned during onboarding
-   - `HEARTBEAT.md` — proactivity settings
-   - `openclaw.json` — full gateway configuration
-7. **A dedicated OpenClaw instance is provisioned** (Docker container on our infrastructure)
-8. **The user's messaging channel is seamlessly reconnected to their NEW personal agent**
-9. **The personal agent sends its first message with full context:**
-   > "Hey [name], I'm [agent name]. I already know you're a [job] who [relevant detail]. What do you need?"
-10. **The Onboarding Agent goes dormant. The user now has a permanent personal agent.**
-
-The website needs to make this flow feel magical, effortless, and inevitable. The user should think: "Wait, that's ALL I have to do?"
-
----
-
-## Pricing & Plans
-
-Design the pricing around these tiers (finalize exact numbers, but this is the structure):
-
-### Starter — $29/month
-- 1 personal agent
-- 1 messaging channel
-- Claude Sonnet 4.6 (fast, smart, affordable)
-- Basic skills (research, writing, reminders, summarization)
-- 500 messages/day
-- Daily memory
-- Email support
-
-### Pro — $59/month (recommended)
-- 1 personal agent
-- Unlimited messaging channels (WhatsApp + Telegram + iMessage simultaneously)
-- Claude Opus 4.6 for complex tasks, Sonnet for routine (intelligent auto-routing)
-- All skills (calendar, email drafting, browser, file access, cron jobs)
-- Unlimited messages
-- Long-term memory with vector search
-- Voice message support (speech-to-text + text-to-speech)
-- Proactive heartbeat check-ins
-- Priority support
-
-### Enterprise / Power — $129/month
-- Multiple agents (up to 5 — e.g., work agent, personal agent, fitness agent)
-- All Pro features
-- Custom model selection (bring your own API keys or choose from catalog):
-  - Claude Opus 4.6 (most capable)
-  - GPT-5.2
-  - Gemini 2.5 Pro
-  - Local model support via Ollama
-  - OpenRouter auto-routing for cost optimization
-- Custom skills development
-- Webhook integrations
-- API access to your agent
-- Advanced sandbox/security configuration
-- Dedicated support
-
-### Model Configuration (Available on Enterprise, Visible to All)
-The website should have a section or interactive element showing that users can configure their agent's "brain":
-- **Model selection** — pick primary model + fallbacks
-- **Cost estimation** — show estimated monthly API cost based on usage patterns
-- **Capability comparison** — what each model is good at (Claude for reasoning, GPT for breadth, Gemini for multimodal, local models for privacy)
-- This should feel like configuring a car — picking the engine, not writing code
-
----
-
-## Website Structure & Pages
-
-### 1. Landing / Hero
-- NOT a standard hero. Think: an interactive demo, a conversation preview, or an animation showing the onboarding flow in real time
-- Instantly communicate the value: "Your personal AI agent. On your phone. In 15 minutes."
-- Show the messaging platforms it works on (WhatsApp, Telegram, iMessage icons)
-- One prominent CTA: "Get Your Agent" or "Start Now"
-
-### 2. How It Works
-- Visual storytelling of the onboarding flow (the 10-step process above)
-- This should be the most impressive section — animated, interactive, or scroll-driven
-- Show actual chat bubbles, voice message waveforms, the A/B preference testing
-- End with the "handoff moment" — when the personal agent takes over
-
-### 3. What Your Agent Can Do
-- Not a feature list. Show USE CASES with real examples:
-  - "Hey, summarize this article" → shows summary
-  - "What's on my calendar tomorrow?" → shows response
-  - "Draft a reply to this email" → shows draft
-  - "Remind me to follow up with Sarah on Thursday" → shows confirmation
-  - Voice message example → transcription → response
-- Maybe an interactive chat demo where visitors can try a limited version
-
-### 4. The Agent's Brain (Model Configuration)
-- Interactive configurator showing model options
-- Slider or toggle: Speed ↔ Intelligence ↔ Cost
-- Show what each model excels at
-- Visual comparison table (but make it beautiful, not a boring grid)
-
-### 5. Pricing
-- Three-tier pricing with the structure above
-- Annual discount option
-- "All plans include" section: hosting, security, memory, onboarding, updates
-- Emphasize: "No API keys. No servers. No config files. Everything included."
-
-### 6. Security & Privacy
-- Local-first philosophy (your data on our secure infrastructure, not shared with anyone)
-- Sandbox isolation
-- Encryption
-- You own your data — export anytime
-- GDPR compliant
-- Brief but trust-building
-
-### 7. FAQ
-- Clean, expandable FAQ addressing: "Is this safe?", "What models can I use?", "Can I switch channels?", "What happens to my data?", "Can I export?", "What if I want to self-host instead?"
-
-### 8. Blog / Updates (future — just plan the layout)
-
----
-
-## Design Requirements
-
-### Visual Direction
-- **Premium, not playful.** This is a $29-129/month product. It should feel like Superhuman, not Duolingo.
-- **Dark mode primary** with a sophisticated color palette. Think deep navy/charcoal with one accent color (electric blue, warm amber, or vibrant coral — pick what works best).
-- **Typography matters.** Use a modern, slightly unconventional font pairing. Not Inter + system fonts. Look at what Linear, Raycast, and Arc use. Consider: Satoshi, General Sans, Cabinet Grotto, Clash Display for headings.
-- **Motion and interaction.** Subtle scroll animations, hover effects, smooth transitions. Not gratuitous — purposeful. Every animation should communicate something.
-- **Mobile-first but desktop-stunning.** Most users will discover this on mobile (since the product lives on their phone). But the desktop experience should be impressive for those who find it via search/social.
-- **No stock photos.** Use illustrations, 3D elements, gradients, mesh gradients, or abstract visuals. If showing UI, show actual chat interfaces with realistic conversations.
-- **Whitespace is a feature.** Let the content breathe. Premium products don't cram.
-
-### Technical Implementation
-- **Next.js** (App Router) with TypeScript
-- **Tailwind CSS** for utility styling + custom CSS for animations and special effects
-- **Framer Motion** for animations
-- **Responsive** — looks perfect on iPhone SE through 4K monitors
-- **Fast** — 95+ Lighthouse performance score
-- **SEO-ready** — proper meta tags, Open Graph, structured data
-- **Analytics-ready** — plan for Plausible or PostHog integration
-
-### Interactive Elements to Consider
-- **Live chat preview** — animated chat bubbles showing a real conversation with the agent
-- **Onboarding flow preview** — scroll-driven animation showing the interview process
-- **Model configurator** — interactive element where you pick model/speed/cost
-- **Pricing calculator** — estimate your monthly cost based on usage
-- **Channel selector** — click your messaging app and see it light up with a preview
-
----
-
-## What to Deliver
-
-### Phase 1: Design Plan (this is what you're doing now)
-1. **Moodboard / visual direction** — colors, typography, reference sites, overall feel
-2. **Sitemap** — all pages and their hierarchy
-3. **Wireframes** — for each major section (desktop + mobile)
-4. **Component inventory** — reusable UI components needed
-5. **Animation plan** — what moves, when, and why
-6. **Technical architecture** — file structure, key libraries, data flow
-
-### Phase 2: Implementation
-1. Full working website based on the approved design plan
-2. All pages and sections functional
-3. Responsive across all breakpoints
-4. Animations and interactions implemented
-5. Optimized for performance
-6. Ready for content integration and CMS connection
-
----
-
-## Important Notes
-
-- **The onboarding story is the hero of this website.** Most AI products say "sign up and figure it out." Our story is: "Pay, have a fun conversation, and your agent is ready." That's the magic. Design around it.
-- **Show, don't tell.** Instead of saying "easy setup," SHOW the onboarding chat. Instead of saying "powerful AI," SHOW real agent responses.
-- **The target audience is NOT developers.** It's professionals, entrepreneurs, busy people, ADHD warriors, anyone who wants a personal assistant but can't afford a human one. The language should be simple, the visuals should be inviting, the process should feel inevitable.
-- **Don't make it look like an AI product from 2023.** No purple gradients everywhere, no robot illustrations, no "powered by AI" badges. This should look like a premium consumer product that happens to use AI.
-- **Study the competition:** Look at what Lindy.ai, Relevance AI, and others are doing — then do something distinctly different and better-looking.
-- **The name "AgentHost" is a working title.** If during your research you find a better name that's available, suggest it. The name should feel premium, personal, and not overly techy. Ideas to consider: personal, intimate, always-there vibes.
-
----
-
-## Reference: OpenClaw Workspace Files (for accuracy in describing the product)
-
-The user never sees these directly, but understanding them helps you describe the product accurately:
+## Architecture
 
 ```
-SOUL.md       → Agent personality, tone, values, behavioral constraints
-AGENTS.md     → Operating contract: priorities, boundaries, workflow rules
-USER.md       → Human context: name, timezone, job, preferences, life details
-IDENTITY.md   → Agent name, emoji, visual theme
-TOOLS.md      → Environment-specific tool notes and capabilities
-HEARTBEAT.md  → Periodic check-in behavior and cadence
-MEMORY.md     → Long-lived curated memory (persistent facts)
-memory/       → Daily conversation logs (auto-managed)
-openclaw.json → Master configuration (model, channels, sandbox, sessions)
+[Success Page with session_id]
+        │
+        ▼
+[Onboarding UI — React/Next.js app]
+        │
+        ├── Static UI steps (buttons, cards, selections) — handled client-side
+        │
+        └── Dynamic AI conversation steps — sent to n8n webhook
+                │
+                POST https://oopsautomation.app.n8n.cloud/webhook/n8nwebhookscary67
+                │
+                Request body: { session_id, step, user_message, context_so_far }
+                Response: { agent_reply, extracted_data, next_action }
 ```
 
-The onboarding conversation generates ALL of these automatically. That's the product magic.
+**Rule of thumb:** If the step has fixed options (pick a channel, pick a use case), handle it with buttons/cards in the UI. If the step requires understanding the user's free-text response and generating a smart follow-up, send it to the n8n webhook.
 
 ---
 
-Now research, plan, and build something stunning. Start with the design plan (Phase 1), get my approval, then implement.
+## The Onboarding Flow
+
+### STEP 0: Success Landing
+
+**Type:** Static UI
+
+**Trigger:** User lands on `/onboarding?session_id=xxx` after successful Stripe payment.
+
+**What the user sees:**
+
+```
+┌─────────────────────────────────────────────┐
+│                                             │
+│   🎉  You're in!                            │
+│                                             │
+│   Let's build your personal AI agent.       │
+│   This takes about 5-10 minutes and         │
+│   we'll do it together — just answer         │
+│   a few questions and make some choices.     │
+│                                             │
+│   No tech knowledge needed. Seriously.       │
+│                                             │
+│          [ Let's Go → ]                      │
+│                                             │
+└─────────────────────────────────────────────┘
+```
+
+**Vibe:** Celebratory but not over the top. Clean, modern. The button should have a subtle pulse animation to draw the eye.
+
+**Data:** Store `session_id` in state. Everything we collect from here forward gets attached to this session.
+
+---
+
+### STEP 1: Meet Your Agent (Name + Personality)
+
+**Type:** Hybrid — Static UI with AI enhancement
+
+**What the user sees:**
+
+```
+┌─────────────────────────────────────────────┐
+│                                             │
+│   First things first — your agent needs     │
+│   a name and a personality.                 │
+│                                             │
+│   What should we call your agent?           │
+│                                             │
+│   [ Text input: "e.g. Atlas, Jarvis..." ]   │
+│                                             │
+│   ── or pick one ──                         │
+│                                             │
+│   [ Atlas ]  [ Nova ]  [ Scout ]  [ Max ]   │
+│                                             │
+│   ─────────────────────────────────────     │
+│                                             │
+│   What vibe should your agent have?         │
+│                                             │
+│   ┌──────────────┐  ┌──────────────┐       │
+│   │ 🎯 Straight  │  │ 😎 Chill     │       │
+│   │   Shooter    │  │   Advisor    │       │
+│   │              │  │              │       │
+│   │ Direct. No   │  │ Relaxed but  │       │
+│   │ fluff. Gets  │  │ smart. Feels │       │
+│   │ to the point │  │ like a friend│       │
+│   └──────────────┘  └──────────────┘       │
+│                                             │
+│   ┌──────────────┐  ┌──────────────┐       │
+│   │ 🧠 Research  │  │ 🏆 Coach     │       │
+│   │   Partner    │  │              │       │
+│   │              │  │ Pushes you.  │       │
+│   │ Thorough.    │  │ Challenges   │       │
+│   │ Analytical.  │  │ your ideas.  │       │
+│   │ Loves data.  │  │ Honest.      │       │
+│   └──────────────┘  └──────────────┘       │
+│                                             │
+│              [ Continue → ]                  │
+│                                             │
+└─────────────────────────────────────────────┘
+```
+
+**Logic:** No webhook call needed. Store `agent_name` and `personality_vibe` in session state.
+
+**Maps to OpenClaw files:** `IDENTITY.md` (name, emoji) + `SOUL.md` (behavioral tone)
+
+---
+
+### STEP 2: What's This Agent For?
+
+**Type:** Static UI — Card selection
+
+**What the user sees:**
+
+```
+┌─────────────────────────────────────────────┐
+│                                             │
+│   What do you mainly want [agent_name]      │
+│   to help you with?                         │
+│                                             │
+│   Pick one to start (you can add more       │
+│   later):                                   │
+│                                             │
+│   ┌────────────────┐  ┌────────────────┐   │
+│   │ 📈 Investing   │  │ 💼 Business    │   │
+│   │ & Finance      │  │   Operations   │   │
+│   │                │  │                │   │
+│   │ Stock analysis,│  │ Leads, clients,│   │
+│   │ portfolio,     │  │ scheduling,    │   │
+│   │ market news    │  │ email, tasks   │   │
+│   └────────────────┘  └────────────────┘   │
+│                                             │
+│   ┌────────────────┐  ┌────────────────┐   │
+│   │ 🔬 Research    │  │ 🏠 Personal    │   │
+│   │ & Learning     │  │   Life         │   │
+│   │                │  │                │   │
+│   │ Deep research, │  │ Health, habits,│   │
+│   │ summaries,     │  │ family, daily  │   │
+│   │ staying sharp  │  │ planning       │   │
+│   └────────────────┘  └────────────────┘   │
+│                                             │
+│   ┌────────────────┐  ┌────────────────┐   │
+│   │ 💻 Development │  │ ✨ I'm Not    │   │
+│   │ & Tech         │  │   Sure Yet     │   │
+│   │                │  │                │   │
+│   │ Code, debug,   │  │ Let's figure   │   │
+│   │ deploy, docs,  │  │ it out         │   │
+│   │ automation     │  │ together       │   │
+│   └────────────────┘  └────────────────┘   │
+│                                             │
+└─────────────────────────────────────────────┘
+```
+
+**Logic:** Store `primary_use_case`. If "I'm Not Sure Yet" is selected, the next step (AI conversation) will include extra discovery questions.
+
+**Maps to OpenClaw files:** Determines which `AGENTS.md` template to use, which `Skills/` to pre-install, and what `TOOLS.md` to generate.
+
+---
+
+### STEP 3: The Conversation — Getting to Know You
+
+**Type:** 🔴 AI-POWERED — This is where the n8n webhook handles the thinking.
+
+**This is the core of the onboarding.** It's a chat interface where the AI asks the user smart, adaptive questions to build their `USER.md` and refine their `SOUL.md` and `AGENTS.md`.
+
+**What the user sees:** A full chat interface. Messages appear with typing indicators, smooth animations. The AI's messages have a subtle agent avatar (using the name they picked). The user types freely.
+
+#### Chat UI Requirements
+
+- Typing indicator (3 bouncing dots) while waiting for webhook response
+- Agent avatar + name shown on each agent message
+- User messages right-aligned, agent messages left-aligned
+- Smooth scroll-to-bottom on new messages
+- Support for **interactive elements inside chat messages** (the webhook response can include UI components — see below)
+- Progress indicator at the top showing which phase of the conversation they're in (subtle, not intrusive — like a thin progress bar or step dots)
+- Mobile-responsive: full-screen chat on mobile
+
+#### How the webhook communication works
+
+**Request to n8n webhook:**
+
+```json
+{
+  "session_id": "stripe_session_xxx",
+  "step": "conversation",
+  "conversation_phase": "getting_to_know_you",
+  "user_message": "I work in real estate, mainly commercial properties",
+  "context_so_far": {
+    "agent_name": "Atlas",
+    "personality_vibe": "research_partner",
+    "primary_use_case": "investing_finance",
+    "conversation_history": [
+      { "role": "agent", "content": "Hey! I'm going to ask you some questions so I can set up Atlas perfectly for you. Let's start simple — what do you do for work?" },
+      { "role": "user", "content": "I work in real estate, mainly commercial properties" }
+    ],
+    "extracted_data": {}
+  }
+}
+```
+
+**Response from n8n webhook:**
+
+```json
+{
+  "agent_reply": "Nice — commercial real estate is a world of its own. What's the part of your job that eats up the most time? Like, is it deal analysis, tenant management, market research... what drains you?",
+  "extracted_data": {
+    "occupation": "Commercial real estate",
+    "industry": "Real estate",
+    "specifics": "commercial properties"
+  },
+  "conversation_phase": "getting_to_know_you",
+  "phase_progress": 0.3,
+  "is_phase_complete": false,
+  "ui_components": null
+}
+```
+
+#### The AI conversation should cover these areas (in natural order, not robotically):
+
+**Phase 1 — Who are you? (2-4 messages)**
+- What do you do? (job/role/industry)
+- Smart follow-up based on their answer (e.g., "What's the best part about commercial real estate?" or "What's the thing that eats up your time?")
+- Any hobbies or interests outside work? (brief, natural)
+
+**Phase 2 — What do you need? (3-5 messages)**
+- Based on their selected use case + what they've said so far, dig into specifics
+- For investing: What do they track? Individual stocks, ETFs, crypto? What sources do they read? Do they have a portfolio they want monitored?
+- For business: What tools do they use? What processes feel manual? Where do they lose time?
+- For personal: What does their daily routine look like? What would they offload?
+- For "not sure": Discovery questions — "If you could have a smart assistant do one thing for you right now, what would it be?"
+
+**Phase 3 — Preferences (2-3 messages)**
+- How often do you want to hear from your agent? (proactive check-ins)
+- Morning briefings? End-of-day summaries? Only when you message?
+- Any topics or boundaries? (Things the agent should never do, or always do)
+
+**Phase 4 — Wrap up (1-2 messages)**
+- Quick summary of what the agent will be set up to do
+- "Anything else I should know about you that would help [agent_name] be better?"
+- Transition message: "Perfect — I've got everything I need. Let's get [agent_name] connected to your favorite messaging app."
+
+#### Key AI behavior rules (for the n8n system prompt):
+
+1. **Never ask more than one question at a time.** One message = one question or one reaction + one question.
+2. **React to what they said before asking the next thing.** If they say "I work in real estate", don't just say "Great! What are your hobbies?" — say something like "Nice — commercial real estate is a world of its own. What's the part that eats up the most time?"
+3. **Keep messages short.** 2-3 sentences max. This is chat, not email.
+4. **Be warm and human, not corporate.** No "Thank you for sharing that!" — more like "Oh that's interesting" or "Ha, yeah that sounds exhausting."
+5. **If the user gives a short answer, dig deeper. If they give a detailed answer, acknowledge and move on.** Don't force depth on someone giving signals they want to move faster.
+6. **Use their name once or twice across the whole conversation, not every message.**
+7. **The conversation should feel like it's going somewhere.** The user should sense progress, not feel like they're filling out a form disguised as a chat.
+
+#### In-chat UI components the webhook can trigger:
+
+The webhook response can include a `ui_components` field that tells the frontend to render interactive elements inside the chat flow. This keeps the conversation dynamic and not just text-text-text.
+
+```json
+{
+  "agent_reply": "Got it! How often do you want Atlas to check in with you?",
+  "ui_components": [
+    {
+      "type": "button_group",
+      "id": "checkin_frequency",
+      "options": [
+        { "label": "☀️ Every morning", "value": "daily_morning" },
+        { "label": "🌙 End of day", "value": "daily_evening" },
+        { "label": "📅 Weekly summary", "value": "weekly" },
+        { "label": "🤫 Only when I ask", "value": "on_demand" }
+      ]
+    }
+  ]
+}
+```
+
+**Supported component types:**
+
+| Type | Use case | Rendered as |
+|------|----------|-------------|
+| `button_group` | Multiple choice (select one) | Horizontal/wrapped buttons below the message |
+| `multi_select` | Multiple choice (select many) | Checkboxes or toggle buttons |
+| `slider` | Scale/spectrum | Slider with labels on each end |
+| `text_input` | Short free text | Input field below the message |
+| `info_card` | Show a summary/preview | Styled card with icon and text |
+
+**When a user interacts with a component**, send the selection as the `user_message` in the next webhook call, with a `component_response` flag:
+
+```json
+{
+  "session_id": "...",
+  "step": "conversation",
+  "user_message": "daily_morning",
+  "is_component_response": true,
+  "component_id": "checkin_frequency",
+  "context_so_far": { ... }
+}
+```
+
+---
+
+### STEP 4: Connect Your Channel
+
+**Type:** Static UI — Selection + guided setup
+
+**What the user sees:**
+
+```
+┌─────────────────────────────────────────────┐
+│                                             │
+│   Almost done! Where do you want to talk    │
+│   to [agent_name]?                          │
+│                                             │
+│   ┌────────────────┐  ┌────────────────┐   │
+│   │                │  │                │   │
+│   │  💬 WhatsApp   │  │  ✈️ Telegram   │   │
+│   │                │  │                │   │
+│   │  Message your  │  │  Chat with     │   │
+│   │  agent like    │  │  your agent    │   │
+│   │  texting a     │  │  in a clean,   │   │
+│   │  friend        │  │  fast app      │   │
+│   │                │  │                │   │
+│   └────────────────┘  └────────────────┘   │
+│                                             │
+│   ┌──────────────────────────────────────┐  │
+│   │  🌐 Web Chat (always included)      │  │
+│   │  You can always chat at              │  │
+│   │  app.yoursite.com/chat               │  │
+│   └──────────────────────────────────────┘  │
+│                                             │
+│   Don't worry — you can add more            │
+│   channels later.                           │
+│                                             │
+└─────────────────────────────────────────────┘
+```
+
+**After selection, show channel-specific setup:**
+
+**If WhatsApp:**
+```
+┌─────────────────────────────────────────────┐
+│                                             │
+│   📱 Connect WhatsApp                       │
+│                                             │
+│   Scan this QR code with your WhatsApp      │
+│   to pair your agent:                       │
+│                                             │
+│   ┌─────────────────┐                       │
+│   │                 │                       │
+│   │   [QR CODE]     │                       │
+│   │                 │                       │
+│   └─────────────────┘                       │
+│                                             │
+│   1. Open WhatsApp on your phone            │
+│   2. Tap ⋮ Menu → Linked Devices            │
+│   3. Tap "Link a Device"                    │
+│   4. Point your camera at this code         │
+│                                             │
+│   Waiting for connection...  ⏳              │
+│                                             │
+└─────────────────────────────────────────────┘
+```
+
+**If Telegram:**
+```
+┌─────────────────────────────────────────────┐
+│                                             │
+│   ✈️ Connect Telegram                       │
+│                                             │
+│   Your agent is ready on Telegram!          │
+│   Tap the button below to start chatting:   │
+│                                             │
+│   [ Open @YourAgentBot in Telegram → ]      │
+│                                             │
+│   Then send /start to say hello.            │
+│                                             │
+└─────────────────────────────────────────────┘
+```
+
+**Maps to OpenClaw files:** `openclaw.json` channels configuration
+
+---
+
+### STEP 5: Launch!
+
+**Type:** Static UI — Celebration
+
+**What the user sees:**
+
+```
+┌─────────────────────────────────────────────┐
+│                                             │
+│              🚀                              │
+│                                             │
+│   [agent_name] is alive!                    │
+│                                             │
+│   Your personal AI agent is set up and      │
+│   ready to go. Here's what [agent_name]     │
+│   knows about you:                          │
+│                                             │
+│   ┌──────────────────────────────────────┐  │
+│   │ 👤 About you                         │  │
+│   │ [Name], [occupation], [brief]        │  │
+│   │                                      │  │
+│   │ 🎯 Primary focus                     │  │
+│   │ [use case description]               │  │
+│   │                                      │  │
+│   │ 📡 Connected via                     │  │
+│   │ [WhatsApp / Telegram / Web]          │  │
+│   │                                      │  │
+│   │ ⏰ Check-ins                         │  │
+│   │ [frequency they picked]              │  │
+│   └──────────────────────────────────────┘  │
+│                                             │
+│   Pro tip: The more you use [agent_name],   │
+│   the better it gets. It learns your        │
+│   preferences over time.                    │
+│                                             │
+│   [ Send my first message → ]               │
+│   [ Go to Dashboard ]                       │
+│                                             │
+└─────────────────────────────────────────────┘
+```
+
+---
+
+## Data → OpenClaw File Mapping
+
+Here's exactly what we generate from the onboarding and where it goes:
+
+| Data collected | OpenClaw file | Who writes it |
+|---|---|---|
+| Agent name, emoji, personality vibe | `IDENTITY.md` | Backend template engine |
+| Behavioral tone, values, communication style | `SOUL.md` | n8n AI generation based on conversation |
+| User's name, job, interests, preferences, context | `USER.md` | n8n AI generation based on conversation |
+| Use case → workflow rules, priorities, boundaries | `AGENTS.md` | Backend template (use-case specific) + AI refinement |
+| Use case → tool availability | `TOOLS.md` | Backend template (use-case specific) |
+| Check-in frequency and content | `HEARTBEAT.md` | Backend template based on selections |
+| Channel selection | `openclaw.json` | Backend config generator |
+| Use case → relevant skills | `Skills/` directory | Backend auto-installs from skill registry |
+| Boot sequence | `BOOT.md` | Backend template (standard) |
+| Empty starting memory | `MEMORY.md` | Backend creates empty file |
+
+---
+
+## n8n Webhook Contract
+
+### Endpoint
+```
+POST https://oopsautomation.app.n8n.cloud/webhook/n8nwebhookscary67
+```
+
+### Request Schema
+
+```json
+{
+  "session_id": "string (Stripe session ID)",
+  "step": "conversation | generate_files",
+  "conversation_phase": "getting_to_know_you | what_you_need | preferences | wrap_up",
+  "user_message": "string (what the user typed or selected)",
+  "is_component_response": "boolean (true if user clicked a UI component)",
+  "component_id": "string | null",
+  "context_so_far": {
+    "agent_name": "string",
+    "personality_vibe": "string",
+    "primary_use_case": "string",
+    "selected_channel": "string | null",
+    "conversation_history": [
+      { "role": "agent | user", "content": "string" }
+    ],
+    "extracted_data": {
+      "name": "string | null",
+      "occupation": "string | null",
+      "industry": "string | null",
+      "interests": ["string"],
+      "tools_used": ["string"],
+      "pain_points": ["string"],
+      "checkin_frequency": "string | null",
+      "specific_requests": ["string"],
+      "boundaries": ["string"]
+    }
+  }
+}
+```
+
+### Response Schema
+
+```json
+{
+  "agent_reply": "string (the message to display)",
+  "extracted_data": {
+    "key": "value (any new data points extracted from the user's message)"
+  },
+  "conversation_phase": "string (current phase)",
+  "phase_progress": "number 0-1 (progress within current phase)",
+  "is_phase_complete": "boolean",
+  "is_onboarding_complete": "boolean",
+  "ui_components": [
+    {
+      "type": "button_group | multi_select | slider | text_input | info_card",
+      "id": "string",
+      "options": [{ "label": "string", "value": "string" }]
+    }
+  ] | null,
+  "generated_summary": {
+    "user_profile": "string (for display on success screen)",
+    "focus_area": "string",
+    "agent_capabilities": ["string"]
+  } | null
+}
+```
+
+### Final file generation call
+
+When `is_onboarding_complete` is true, the frontend makes one final call:
+
+```json
+{
+  "session_id": "...",
+  "step": "generate_files",
+  "context_so_far": { ... full accumulated context ... }
+}
+```
+
+The n8n workflow then:
+1. Generates all OpenClaw markdown files using AI
+2. Creates the `openclaw.json` config
+3. Deploys/provisions the agent instance
+4. Returns confirmation with the agent's contact details
+
+---
+
+## Design Guidelines
+
+**Overall feel:** Modern, clean, minimal. Think Linear or Vercel's onboarding — not a SaaS dashboard. Dark mode preferred but not mandatory.
+
+**Typography:** One sans-serif font family. Inter, Geist, or similar.
+
+**Colors:** Muted palette with one accent color for CTAs and progress indicators.
+
+**Animations:**
+- Messages slide in from bottom with slight fade
+- Typing indicator: 3 dots bouncing in sequence
+- Card selections: subtle scale on hover, border highlight on select
+- Progress bar: smooth transitions between phases
+- Success screen: confetti or particle burst (subtle, not cheesy)
+
+**Mobile-first:** The chat step (Step 3) should feel native on mobile. Full-screen chat, keyboard-aware, no awkward scrolling.
+
+**Accessibility:** All interactive elements keyboard-navigable. Sufficient color contrast. Screen reader labels on buttons.
+
+---
+
+## Edge Cases to Handle
+
+| Scenario | Handling |
+|---|---|
+| User refreshes mid-onboarding | Persist state to backend via session_id. On load, check for existing progress and resume. |
+| User gives one-word answers | AI should gently probe deeper: "Tell me more about that?" or offer button options to make it easier |
+| User goes off-topic | AI should acknowledge briefly and steer back: "Ha, that's interesting — but let me ask you this..." |
+| User wants to skip the conversation | Offer a "Quick Setup" mode with minimal questions (name, use case, channel) and sensible defaults |
+| Webhook timeout (>15 seconds) | Show "Still thinking..." message. Retry once. If still failing, show "Something went wrong, let me try again" with a retry button. |
+| User closes tab and comes back | Resume from last saved state. Show "Welcome back! We were setting up [agent_name]. Ready to continue?" |
+| Invalid session_id | Redirect to purchase page |
+| User types something inappropriate | AI handles gracefully, doesn't repeat it, stays on track |
+
+---
+
+## Tech Stack Recommendation
+
+- **Frontend:** Next.js or React + Tailwind
+- **State management:** React state + backend persistence via session_id
+- **Chat interface:** Custom-built (not a third-party widget — needs to support UI components in-chat)
+- **Webhook calls:** Standard fetch/axios to n8n endpoint
+- **Animations:** Framer Motion
+- **Deployment:** Vercel or similar
+
+---
+
+## What NOT to show the user — ever
+
+- The words: SOUL.md, AGENTS.md, USER.md, TOOLS.md, IDENTITY.md, HEARTBEAT.md, MEMORY.md, BOOT.md, workspace, markdown, config, terminal, CLI, SSH, Docker, gateway, daemon
+- Any file paths or directory structures
+- API keys or technical configuration
+- Model names (claude-opus, sonnet, etc.)
+- Error stack traces or technical errors
+- The concept of "prompt engineering" or "system prompts"
+
+**The user's mental model should be:** "I answered some questions, picked some options, and now I have a personal AI agent that texts me."
