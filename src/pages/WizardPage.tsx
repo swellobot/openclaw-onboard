@@ -1,36 +1,46 @@
 import { useWizardState } from '../hooks/useWizardState';
 import WizardShell from '../components/wizard/WizardShell';
-import WelcomeStep from '../components/wizard/steps/WelcomeStep';
-import ChannelStep from '../components/wizard/steps/ChannelStep';
-import PreferencesStep from '../components/wizard/steps/PreferencesStep';
-import ConversationStep from '../components/wizard/steps/ConversationStep';
 import NameAgentStep from '../components/wizard/steps/NameAgentStep';
-import SetupStep from '../components/wizard/steps/SetupStep';
+import ScenarioShowcaseStep from '../components/wizard/steps/ScenarioShowcaseStep';
+import PersonalityPickerStep from '../components/wizard/steps/PersonalityPickerStep';
+import ConversationStep from '../components/wizard/steps/ConversationStep';
+import ChannelStep from '../components/wizard/steps/ChannelStep';
+import LaunchStep from '../components/wizard/steps/LaunchStep';
 
 export default function WizardPage() {
   const w = useWizardState();
 
-  const isSetup = w.step === 5;
-  const showNav = w.step > 0 && !isSetup;
+  const isLaunch = w.step === 5;
+  const isPersonality = w.step === 2;
+  const showNav = w.step > 0 && !isLaunch && !isPersonality;
 
   const stepContent = () => {
     switch (w.step) {
       case 0:
-        return <WelcomeStep onNext={w.next} />;
+        return (
+          <NameAgentStep
+            agentName={w.state.agentName}
+            onSetName={w.setAgentName}
+            onNext={w.next}
+          />
+        );
       case 1:
         return (
-          <ChannelStep
-            selected={w.state.channel}
-            onSelect={w.setChannel}
+          <ScenarioShowcaseStep
+            agentName={w.state.agentName}
+            selected={w.state.selectedScenarios}
+            onToggle={w.toggleScenario}
             onNext={w.next}
           />
         );
       case 2:
         return (
-          <PreferencesStep
-            selected={w.state.preferences}
-            onToggle={w.togglePreference}
+          <PersonalityPickerStep
+            agentName={w.state.agentName}
+            choices={w.state.personalityChoices}
+            onChoice={w.addPersonalityChoice}
             onNext={w.next}
+            onBack={w.back}
           />
         );
       case 3:
@@ -47,18 +57,19 @@ export default function WizardPage() {
         );
       case 4:
         return (
-          <NameAgentStep
+          <ChannelStep
             agentName={w.state.agentName}
-            userName={w.state.profile?.name || ''}
-            onSetName={w.setAgentName}
+            selected={w.state.channel}
+            onSelect={w.setChannel}
             onNext={w.next}
           />
         );
       case 5:
         return (
-          <SetupStep
+          <LaunchStep
             agentName={w.state.agentName}
             userName={w.state.profile?.name || ''}
+            channel={w.state.channel}
             onComplete={w.complete}
           />
         );
@@ -73,7 +84,7 @@ export default function WizardPage() {
       direction={w.direction}
       progress={w.progress}
       totalSteps={w.totalSteps}
-      canGoBack={w.step > 0 && !isSetup}
+      canGoBack={w.step > 0 && !isLaunch}
       showNav={showNav}
       onBack={w.back}
     >

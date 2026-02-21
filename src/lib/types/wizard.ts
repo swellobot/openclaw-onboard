@@ -1,10 +1,4 @@
-export type MessagingChannel =
-  | 'whatsapp'
-  | 'telegram'
-  | 'imessage'
-  | 'slack'
-  | 'discord'
-  | 'signal';
+export type MessagingChannel = 'whatsapp' | 'telegram';
 
 export interface ConversationMessage {
   role: 'user' | 'assistant';
@@ -20,25 +14,34 @@ export interface UserProfile {
   notes: string;
 }
 
+export interface PersonalityChoice {
+  round: number;
+  choice: 'A' | 'B' | null;
+  value: number | null;
+}
+
 export interface WizardState {
-  channel: MessagingChannel | null;
-  preferences: string[];
+  agentName: string;
+  selectedScenarios: string[];
+  personalityChoices: PersonalityChoice[];
   conversationMessages: ConversationMessage[];
   profile: UserProfile | null;
   conversationDone: boolean;
-  agentName: string;
+  channel: MessagingChannel | null;
   sessionId: string;
 }
 
 export interface OnboardingData {
   version: 2;
   sessionId: string;
-  channel: MessagingChannel;
-  preferences: string[];
-  profile: UserProfile | null;
-  agent: {
-    name: string;
+  agent: { name: string };
+  selectedScenarios: string[];
+  personality: {
+    choices: PersonalityChoice[];
+    summary: string;
   };
+  profile: UserProfile | null;
+  channel: MessagingChannel;
   conversationLog: ConversationMessage[];
   completedAt: string;
 }

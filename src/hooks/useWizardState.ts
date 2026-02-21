@@ -6,8 +6,10 @@ import type {
   OnboardingData,
   ConversationMessage,
   UserProfile,
+  PersonalityChoice,
   MessagingChannel,
 } from '../lib/types/wizard';
+import { derivePersonalitySummary } from '../lib/data/wizard';
 
 const ONBOARDING_KEY = 'agenthost_onboarding';
 const TOTAL_STEPS = 6;
@@ -18,12 +20,13 @@ function progressKey(sessionId: string) {
 
 function makeInitialState(sessionId: string): WizardState {
   return {
-    channel: null,
-    preferences: [],
+    agentName: '',
+    selectedScenarios: [],
+    personalityChoices: [],
     conversationMessages: [],
     profile: null,
     conversationDone: false,
-    agentName: '',
+    channel: null,
     sessionId,
   };
 }
@@ -52,12 +55,14 @@ function saveOnboarding(state: WizardState) {
   const data: OnboardingData = {
     version: 2,
     sessionId: state.sessionId,
-    channel: state.channel!,
-    preferences: state.preferences,
-    profile: state.profile,
-    agent: {
-      name: state.agentName,
+    agent: { name: state.agentName },
+    selectedScenarios: state.selectedScenarios,
+    personality: {
+      choices: state.personalityChoices,
+      summary: derivePersonalitySummary(state.personalityChoices),
     },
+    profile: state.profile,
+    channel: state.channel!,
     conversationLog: state.conversationMessages,
     completedAt: new Date().toISOString(),
   };
@@ -100,16 +105,26 @@ export function useWizardState() {
     [step]
   );
 
-  const setChannel = useCallback((channel: MessagingChannel) => {
-    setState((prev) => ({ ...prev, channel }));
+  const setAgentName = useCallback((agentName: string) => {
+    setState((prev) => ({ ...prev, agentName }));
   }, []);
 
-  const togglePreference = useCallback((id: string) => {
+  const toggleScenario = useCallback((id: string) => {
     setState((prev) => ({
       ...prev,
-      preferences: prev.preferences.includes(id)
-        ? prev.preferences.filter((p) => p !== id)
-        : [...prev.preferences, id],
+      selectedScenarios: prev.selectedScenarios.includes(id)
+        ? prev.selectedScenarios.filter((s) => s !== id)
+        : [...prev.selectedScenarios, id],
+    }));
+  }, []);
+
+  const addPersonalityChoice = useCallback((choice: PersonalityChoice) => {
+    setState((prev) => ({
+      ...prev,
+      personalityChoices: [
+        ...prev.personalityChoices.filter((c) => c.round !== choice.round),
+        choice,
+      ],
     }));
   }, []);
 
@@ -124,8 +139,8 @@ export function useWizardState() {
     setState((prev) => ({ ...prev, conversationDone: done, profile }));
   }, []);
 
-  const setAgentName = useCallback((agentName: string) => {
-    setState((prev) => ({ ...prev, agentName }));
+  const setChannel = useCallback((channel: MessagingChannel) => {
+    setState((prev) => ({ ...prev, channel }));
   }, []);
 
   const complete = useCallback(() => {
@@ -144,11 +159,12 @@ export function useWizardState() {
     next,
     back,
     goToStep,
-    setChannel,
-    togglePreference,
+    setAgentName,
+    toggleScenario,
+    addPersonalityChoice,
     addConversationMessage,
     setConversationDone,
-    setAgentName,
+    setChannel,
     complete,
   };
 }
