@@ -50,6 +50,11 @@ export default function WizardPage() {
             channel={w.state.channel || ''}
             messages={w.state.conversationMessages}
             conversationDone={w.state.conversationDone}
+            agentContext={{
+              agentName: w.state.agentName,
+              selectedScenarios: w.state.selectedScenarios,
+              personality: w.state.personalityChoices,
+            }}
             onAddMessage={w.addConversationMessage}
             onDone={w.setConversationDone}
             onNext={w.next}
@@ -70,6 +75,9 @@ export default function WizardPage() {
             agentName={w.state.agentName}
             userName={w.state.profile?.name || ''}
             channel={w.state.channel}
+            sessionId={w.sessionId}
+            selectedScenarios={w.state.selectedScenarios}
+            personalityChoices={w.state.personalityChoices}
             onComplete={w.complete}
           />
         );
@@ -86,6 +94,7 @@ export default function WizardPage() {
       totalSteps={w.totalSteps}
       canGoBack={w.step > 0 && !isLaunch}
       showNav={showNav}
+      hideChrome={isPersonality}
       onBack={w.back}
     >
       {stepContent()}

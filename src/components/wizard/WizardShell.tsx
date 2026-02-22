@@ -9,6 +9,7 @@ interface WizardShellProps {
   totalSteps: number;
   canGoBack: boolean;
   showNav: boolean;
+  hideChrome?: boolean;
   onBack: () => void;
   children: ReactNode;
 }
@@ -35,50 +36,59 @@ export default function WizardShell({
   totalSteps,
   canGoBack,
   showNav,
+  hideChrome,
   onBack,
   children,
 }: WizardShellProps) {
   return (
     <div className="min-h-screen bg-bg-deep">
       <div className="mx-auto flex min-h-screen max-w-[640px] flex-col px-6 py-8">
-        {/* Header */}
-        <header className="flex items-center justify-between">
-          <p className="text-xs uppercase tracking-[0.3em] text-text-muted">
-            OpenClaw Onboard
-          </p>
-          <p className="text-xs text-text-muted">
-            {step + 1} / {totalSteps}
-          </p>
-        </header>
+        {!hideChrome && (
+          <>
+            {/* Header */}
+            <header className="flex items-center justify-between">
+              <p className="text-xs uppercase tracking-[0.3em] text-text-muted">
+                Agent Host
+              </p>
+              <p className="text-xs text-text-muted">
+                {step + 1} / {totalSteps}
+              </p>
+            </header>
 
-        {/* Progress bar */}
-        <div className="mt-6">
-          <div className="h-1.5 w-full overflow-hidden rounded-full bg-bg-elevated">
-            <motion.div
-              className="h-full rounded-full bg-gradient-to-r from-accent to-amber-600"
-              initial={false}
-              animate={{ width: `${progress}%` }}
-              transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
-              layout
-            />
-          </div>
-        </div>
+            {/* Progress bar */}
+            <div className="mt-6">
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-bg-elevated">
+                <motion.div
+                  className="h-full rounded-full bg-gradient-to-r from-accent to-amber-600"
+                  initial={false}
+                  animate={{ width: `${progress}%` }}
+                  transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+                  layout
+                />
+              </div>
+            </div>
+          </>
+        )}
 
         {/* Step content */}
-        <main className="mt-8 flex-1">
-          <AnimatePresence mode="wait" custom={direction}>
-            <motion.div
-              key={step}
-              custom={direction}
-              variants={stepVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
-            >
-              {children}
-            </motion.div>
-          </AnimatePresence>
+        <main className={cn(hideChrome ? 'mt-0' : 'mt-5', 'flex-1')}>
+          {hideChrome ? (
+            children
+          ) : (
+            <AnimatePresence mode="wait" custom={direction}>
+              <motion.div
+                key={step}
+                custom={direction}
+                variants={stepVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+              >
+                {children}
+              </motion.div>
+            </AnimatePresence>
+          )}
         </main>
 
         {/* Footer nav */}

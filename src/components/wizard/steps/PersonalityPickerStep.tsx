@@ -25,6 +25,16 @@ const dimensionIcons: Record<string, string> = {
   Style: '💪',
 };
 
+const dimensionQuestions: Record<string, string> = {
+  Length: 'How detailed should {agent} be?',
+  Tone: 'How should {agent} sound?',
+  Emojis: 'How many emojis should {agent} use?',
+  Humor: 'How funny should {agent} be?',
+  Initiative: 'How proactive should {agent} be?',
+  Opinions: 'How opinionated should {agent} be?',
+  Style: 'How should {agent} handle pushback?',
+};
+
 function interpolate(text: string, agentName: string) {
   return text.replace(/\{agent\}/g, agentName || 'your agent');
 }
@@ -44,15 +54,17 @@ export default function PersonalityPickerStep({
     const first = personalityRounds.find((r) => !answered.includes(r.id));
     return first ? personalityRounds.indexOf(first) : TOTAL_ROUNDS;
   });
-  const [phase, setPhase] = useState<'rounds' | 'summary' | 'tweak'>(
-    () => (currentRound >= TOTAL_ROUNDS ? 'summary' : 'rounds')
-  );
+  const [phase, setPhase] = useState<'intro' | 'rounds' | 'summary' | 'tweak'>(() => {
+    if (currentRound >= TOTAL_ROUNDS) return 'summary';
+    if (choices.length === 0) return 'intro';
+    return 'rounds';
+  });
 
   const allDone = currentRound >= TOTAL_ROUNDS;
   const round = allDone ? null : personalityRounds[currentRound];
 
   useEffect(() => {
-    if (allDone && phase === 'rounds') setPhase('summary');
+    if (allDone && (phase === 'rounds' || phase === 'intro')) setPhase('summary');
   }, [allDone, phase]);
 
   const advanceRound = useCallback(() => {
@@ -97,10 +109,10 @@ export default function PersonalityPickerStep({
   };
 
   const handleTotConfirm = useCallback(() => {
-    if (totConfirmed) return;
+    if (totConfirmed || !totInteracted) return;
     setTotConfirmed(true);
     onChoice({ round: round!.id, choice: totActive, value: null });
-  }, [totConfirmed, totActive, round, onChoice]);
+  }, [totConfirmed, totInteracted, totActive, round, onChoice]);
 
   // Auto-advance after this-or-that confirmation
   useEffect(() => {
@@ -133,36 +145,15 @@ export default function PersonalityPickerStep({
   };
 
   const handleSliderConfirm = useCallback(() => {
-    if (!round) return;
+    if (!round || !sliderInteracted) return;
     onChoice({ round: round.id, choice: null, value: sliderValue });
     advanceRound();
-  }, [round, sliderValue, onChoice, advanceRound]);
+  }, [round, sliderValue, sliderInteracted, onChoice, advanceRound]);
 
   const handleRedo = () => {
     setCurrentRound(0);
     setPhase('rounds');
   };
-
-  /* ── Compute footer action ── */
-  const getAction = (): { label: string; onClick: () => void; prominent: boolean } | null => {
-    if (phase === 'summary') return { label: 'Looks good →', onClick: onNext, prominent: true };
-    if (phase === 'tweak') return { label: 'Done →', onClick: () => setPhase('summary'), prominent: true };
-    if (!round) return null;
-
-    if (round.type === 'this-or-that') {
-      if (totConfirmed) return null; // auto-advancing, hide button
-      return { label: 'Next →', onClick: handleTotConfirm, prominent: totInteracted };
-    }
-
-    if (round.type === 'slider') {
-      if (humorGate === 'asking') return null;
-      return { label: 'This feels right →', onClick: handleSliderConfirm, prominent: sliderInteracted };
-    }
-
-    return null;
-  };
-
-  const action = getAction();
 
   // Confirmation message for this-or-that
   const totConfirmMsg =
@@ -175,128 +166,236 @@ export default function PersonalityPickerStep({
         )
       : null;
 
-  return (
-    <div className="flex flex-col pb-24">
-      {/* Compact header + round counter */}
-      <div className="mb-3 flex items-center justify-between">
-        <motion.h2
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="font-display text-sm font-medium text-text-muted"
-        >
-          How should {displayName} talk?
-        </motion.h2>
-        {phase === 'rounds' && (
-          <motion.span
+  /* ── Intro screen ── */
+  if (phase === 'intro') {
+    return (
+      <div className="flex flex-col">
+        {/* Mirror WizardShell chrome */}
+        <header className="flex items-center justify-between">
+          <p className="text-xs uppercase tracking-[0.3em] text-text-muted">
+            Agent Host
+          </p>
+          <p className="text-xs text-text-muted">3 / 6</p>
+        </header>
+        <div className="mt-6">
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-bg-elevated">
+            <motion.div
+              className="h-full rounded-full bg-gradient-to-r from-accent to-amber-600"
+              initial={false}
+              animate={{ width: '50%' }}
+              transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+            />
+          </div>
+        </div>
+
+        <div className="flex flex-col items-center pt-16 sm:pt-24">
+          <motion.h1
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center font-display text-xl sm:text-2xl font-semibold text-text-primary"
+          >
+            Let&apos;s shape {displayName}&apos;s personality
+          </motion.h1>
+          <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-xs tabular-nums text-text-muted"
+            transition={{ delay: 0.15 }}
+            className="mt-3 max-w-sm text-center text-sm text-text-secondary"
           >
-            {currentRound + 1}/{TOTAL_ROUNDS}
-          </motion.span>
-        )}
+            You&apos;ll see how {displayName} would respond in real situations.
+            Just pick the style you prefer.
+          </motion.p>
+          <motion.button
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            onClick={() => setPhase('rounds')}
+            className="mt-8 rounded-xl bg-gradient-to-r from-accent to-amber-600 px-8 py-3.5 text-sm font-semibold text-bg-deep shadow-glow-sm"
+          >
+            Let&apos;s go &rarr;
+          </motion.button>
+        </div>
+      </div>
+    );
+  }
+
+  /* ── Summary / Tweak ── */
+  if (phase === 'summary' || phase === 'tweak') {
+    return (
+      <div className="flex flex-col pb-28 sm:pb-32">
+        <AnimatePresence mode="wait">
+          {phase === 'summary' && (
+            <SummaryContent
+              key="summary"
+              agentName={displayName}
+              choices={choices}
+              onRedo={handleRedo}
+              onTweak={() => setPhase('tweak')}
+            />
+          )}
+          {phase === 'tweak' && (
+            <TweakContent
+              key="tweak"
+              choices={choices}
+              onChoice={onChoice}
+            />
+          )}
+        </AnimatePresence>
+
+        {/* Fixed bottom bar */}
+        <div className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none">
+          <div className="mx-auto max-w-[640px] px-4 sm:px-6 pb-5 sm:pb-8 pt-5 sm:pt-6 pointer-events-auto bg-gradient-to-t from-bg-deep from-70% to-transparent">
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={phase === 'summary' ? onNext : () => setPhase('summary')}
+                className="w-full rounded-xl bg-gradient-to-r from-accent to-amber-600 py-3.5 text-sm font-semibold text-bg-deep shadow-glow-sm"
+              >
+                {phase === 'summary' ? 'Looks good \u2192' : 'Done \u2192'}
+              </button>
+              <button
+                onClick={onBack}
+                className="w-full rounded-xl border border-border-subtle py-2.5 text-sm font-medium text-text-secondary transition hover:border-border-visible hover:text-text-primary"
+              >
+                Back
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  /* ── Rounds (1–7) — no shell chrome, no Back ── */
+  const roundAction =
+    round?.type === 'this-or-that'
+      ? (!totConfirmed ? { label: 'Next \u2192', onClick: handleTotConfirm, disabled: !totInteracted } : null)
+      : round?.type === 'slider' && humorGate !== 'asking'
+        ? { label: 'This feels right \u2192', onClick: handleSliderConfirm, disabled: !sliderInteracted }
+        : null;
+
+  return (
+    <div className="flex flex-col pb-56 sm:pb-64">
+      {/* Header + dot indicators */}
+      <div className="mb-3 sm:mb-4">
+        <h2 className="font-display text-xs sm:text-sm font-medium text-text-muted">
+          How should {displayName} talk?
+        </h2>
+        <div className="mt-2 flex items-center gap-1.5">
+          {personalityRounds.map((_, i) => (
+            <div
+              key={i}
+              className={cn(
+                'h-1.5 w-1.5 rounded-full transition-colors duration-300',
+                i === currentRound
+                  ? 'bg-accent'
+                  : i < currentRound
+                    ? 'bg-accent/40'
+                    : 'bg-border-subtle'
+              )}
+            />
+          ))}
+        </div>
       </div>
 
-      {/* Thin progress bar */}
-      {phase === 'rounds' && (
-        <div className="mb-6 h-[2px] w-full overflow-hidden rounded-full bg-border-subtle">
-          <motion.div
-            className="h-full rounded-full bg-accent/80"
-            initial={false}
-            animate={{ width: `${((currentRound + 1) / TOTAL_ROUNDS) * 100}%` }}
-            transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
-          />
-        </div>
+      {/* Round content — only the card, no pills */}
+      {round?.type === 'this-or-that' && (
+        <ThisOrThatContent
+          round={round}
+          agentName={displayName}
+          active={totActive}
+        />
+      )}
+      {round?.type === 'slider' && (
+        <SliderContent
+          round={round}
+          agentName={displayName}
+          value={sliderValue}
+          humorGate={humorGate}
+          onConfirmHumor={handleConfirmHumor}
+          onDeclineHumor={handleDeclineHumor}
+        />
       )}
 
-      {/* Step content */}
-      <AnimatePresence mode="wait">
-        {phase === 'rounds' && round?.type === 'this-or-that' && (
-          <ThisOrThatContent
-            key={`tot-${round.id}`}
-            round={round}
-            agentName={displayName}
-            active={totActive}
-            confirmed={totConfirmed}
-            onToggle={handleTotToggle}
-          />
-        )}
-
-        {phase === 'rounds' && round?.type === 'slider' && (
-          <SliderContent
-            key={`sl-${round.id}`}
-            round={round}
-            agentName={displayName}
-            value={sliderValue}
-            humorGate={humorGate}
-            onSliderChange={handleSliderChange}
-            onConfirmHumor={handleConfirmHumor}
-            onDeclineHumor={handleDeclineHumor}
-          />
-        )}
-
-        {phase === 'summary' && (
-          <SummaryContent
-            key="summary"
-            agentName={displayName}
-            choices={choices}
-            onRedo={handleRedo}
-            onTweak={() => setPhase('tweak')}
-          />
-        )}
-
-        {phase === 'tweak' && (
-          <TweakContent
-            key="tweak"
-            choices={choices}
-            onChoice={onChoice}
-          />
-        )}
-      </AnimatePresence>
-
-      {/* ── Fixed bottom bar: Back + Next ── */}
+      {/* ── Fixed bottom bar: question + pills + action ── */}
       <div className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none">
-        <div className="mx-auto max-w-[640px] px-6 pb-8 pt-6 pointer-events-auto bg-gradient-to-t from-bg-deep from-70% to-transparent">
-          <div className="flex items-center justify-between gap-3">
-            {/* Back */}
-            <button
-              onClick={onBack}
-              className="rounded-xl border border-border-subtle px-5 py-2.5 text-sm font-medium text-text-secondary transition hover:border-border-visible hover:text-text-primary"
-            >
-              Back
-            </button>
+        <div className="mx-auto max-w-[640px] px-4 sm:px-6 pb-5 sm:pb-8 pt-4 pointer-events-auto bg-gradient-to-t from-bg-deep from-60% to-transparent">
+          {/* Dimension question */}
+          {round && !totConfirmMsg && (
+            <p className="mb-3 text-center text-sm sm:text-base font-medium text-text-secondary">
+              {interpolate(dimensionQuestions[round.dimension] || '', displayName)}
+            </p>
+          )}
 
-            {/* Action / confirmation */}
-            <AnimatePresence mode="wait">
-              {totConfirmMsg ? (
-                <motion.span
-                  key="tot-confirm"
-                  initial={{ opacity: 0, x: 8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0 }}
-                  className="text-sm font-medium text-text-muted"
-                >
-                  {totConfirmMsg}
-                </motion.span>
-              ) : action ? (
-                <motion.button
-                  key={`action-${phase}-${currentRound}`}
-                  initial={{ opacity: 0, x: 8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0 }}
-                  onClick={action.onClick}
-                  className={cn(
-                    'rounded-xl px-5 py-2.5 text-sm font-semibold transition-all duration-300',
-                    action.prominent
-                      ? 'bg-gradient-to-r from-accent to-amber-600 text-bg-deep shadow-glow-sm'
-                      : 'border border-border-subtle text-text-muted hover:border-accent/40 hover:text-text-primary'
-                  )}
-                >
-                  {action.label}
-                </motion.button>
-              ) : null}
-            </AnimatePresence>
-          </div>
+          {/* This-or-that pills */}
+          {round?.type === 'this-or-that' && !totConfirmMsg && (
+            <div className="relative mb-3 flex gap-2.5 sm:gap-3">
+              {(['A', 'B'] as const).map((letter) => {
+                const r = round as ThisOrThatRound;
+                const label = letter === 'A' ? r.labelA : r.labelB;
+                const isActive = totActive === letter && totInteracted;
+                return (
+                  <button
+                    key={letter}
+                    onClick={() => handleTotToggle(letter)}
+                    disabled={totConfirmed}
+                    className={cn(
+                      'relative flex-1 overflow-hidden rounded-xl py-3 sm:py-3.5 text-sm sm:text-base font-medium transition-all duration-200',
+                      totConfirmed && !isActive && 'opacity-20',
+                      isActive
+                        ? 'bg-accent text-bg-deep shadow-glow-sm'
+                        : 'border border-border-visible bg-bg-elevated text-text-secondary hover:border-accent/30 hover:text-text-primary'
+                    )}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Slider pills */}
+          {round?.type === 'slider' && humorGate !== 'asking' && (
+            <div className="mb-3 flex flex-wrap justify-center gap-2 sm:gap-2.5">
+              {(round as SliderRound).levels.map((lvl, i) => {
+                const pos = i + 1;
+                const isActive = pos === sliderValue;
+                return (
+                  <button
+                    key={i}
+                    onClick={() => handleSliderChange(pos)}
+                    className={cn(
+                      'rounded-xl px-3.5 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-medium transition-colors duration-200',
+                      isActive
+                        ? 'bg-accent text-bg-deep shadow-glow-sm'
+                        : 'border border-border-visible bg-bg-elevated text-text-secondary hover:border-accent/30 hover:text-text-primary'
+                    )}
+                  >
+                    {lvl.label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Action / confirmation */}
+          {totConfirmMsg ? (
+            <p className="text-center text-sm font-medium text-text-muted">
+              {totConfirmMsg}
+            </p>
+          ) : roundAction ? (
+            <button
+              disabled={roundAction.disabled}
+              onClick={roundAction.onClick}
+              className={cn(
+                'w-full rounded-xl py-3.5 text-sm font-semibold transition-all duration-300',
+                roundAction.disabled
+                  ? 'border border-border-subtle text-text-muted/40 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-accent to-amber-600 text-bg-deep shadow-glow-sm'
+              )}
+            >
+              {roundAction.label}
+            </button>
+          ) : null}
         </div>
       </div>
     </div>
@@ -308,42 +407,32 @@ export default function PersonalityPickerStep({
 function AgentMessageCard({
   agentName,
   message,
-  messageKey,
   isEmpty,
 }: {
   agentName: string;
   message: string;
-  messageKey: string | number;
   isEmpty?: boolean;
 }) {
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[rgba(26,26,31,0.65)] p-5 backdrop-blur-md shadow-card">
+    <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[rgba(26,26,31,0.65)] p-4 sm:p-5 md:p-6 backdrop-blur-md shadow-card">
       {/* Agent avatar + name */}
-      <div className="mb-3 flex items-center gap-2">
+      <div className="mb-2.5 sm:mb-3 flex items-center gap-2">
         <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent to-amber-600 text-[11px] font-bold text-bg-deep">
           {agentName.charAt(0).toUpperCase()}
         </div>
         <span className="text-xs font-medium text-text-muted">{agentName}</span>
       </div>
 
-      {/* Message with crossfade */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={messageKey}
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -6 }}
-          transition={{ duration: 0.25 }}
-          className={cn(
-            'whitespace-pre-line leading-relaxed',
-            isEmpty
-              ? 'text-sm text-text-muted italic'
-              : 'text-[17px] text-text-primary'
-          )}
-        >
-          {message}
-        </motion.div>
-      </AnimatePresence>
+      <div
+        className={cn(
+          'whitespace-pre-line leading-relaxed',
+          isEmpty
+            ? 'text-sm text-text-muted italic'
+            : 'text-[15px] sm:text-[17px] text-text-primary'
+        )}
+      >
+        {message}
+      </div>
     </div>
   );
 }
@@ -354,69 +443,35 @@ function ThisOrThatContent({
   round,
   agentName,
   active,
-  confirmed,
-  onToggle,
 }: {
   round: ThisOrThatRound;
   agentName: string;
   active: 'A' | 'B';
-  confirmed: boolean;
-  onToggle: (letter: 'A' | 'B') => void;
 }) {
   const currentMessage = active === 'A' ? round.optionA : round.optionB;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, x: 40 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -40 }}
-      transition={{ duration: 0.3 }}
-      className="flex flex-col"
-    >
-      {/* User context — visible but quiet */}
-      <p className="mb-3 text-sm text-text-secondary">
-        "{round.userMessage}"
+    <div className="flex flex-col">
+      {/* Context line */}
+      <p className="mb-3 text-sm sm:text-base italic text-text-muted/70">
+        {interpolate(round.context, agentName)}
       </p>
+
+      {/* User message — looks like a sent message, not a button */}
+      <div className="mb-3 sm:mb-4 flex justify-end">
+        <div className="rounded-2xl rounded-br-sm bg-white/[0.06] px-4 py-2.5 max-w-[80%]">
+          <p className="text-sm sm:text-[15px] text-text-secondary">
+            {round.userMessage}
+          </p>
+        </div>
+      </div>
 
       {/* Hero agent message card */}
       <AgentMessageCard
         agentName={agentName}
         message={currentMessage}
-        messageKey={active}
       />
-
-      {/* Toggle pills */}
-      <div className="relative mt-5 flex gap-2">
-        {(['A', 'B'] as const).map((letter) => {
-          const label = letter === 'A' ? round.labelA : round.labelB;
-          const isActive = active === letter;
-          return (
-            <motion.button
-              key={letter}
-              onClick={() => onToggle(letter)}
-              disabled={confirmed}
-              whileTap={confirmed ? {} : { scale: 0.96 }}
-              className={cn(
-                'relative flex-1 overflow-hidden rounded-full py-2.5 text-sm font-medium transition-colors duration-200',
-                confirmed && !isActive && 'opacity-30',
-                isActive
-                  ? 'text-bg-deep'
-                  : 'border border-border-subtle text-text-muted hover:border-border-visible hover:text-text-primary'
-              )}
-            >
-              {isActive && (
-                <motion.div
-                  layoutId={`pill-bg-${round.id}`}
-                  className="absolute inset-0 rounded-full bg-accent"
-                  transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-                />
-              )}
-              <span className="relative z-10">{label}</span>
-            </motion.button>
-          );
-        })}
-      </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -427,7 +482,6 @@ function SliderContent({
   agentName,
   value,
   humorGate,
-  onSliderChange,
   onConfirmHumor,
   onDeclineHumor,
 }: {
@@ -435,23 +489,19 @@ function SliderContent({
   agentName: string;
   value: number;
   humorGate: 'none' | 'asking' | 'confirmed';
-  onSliderChange: (val: number) => void;
   onConfirmHumor: () => void;
   onDeclineHumor: () => void;
 }) {
   const level = round.levels[value - 1];
   const isEmptyPreview = !level?.preview;
-  const leftLabel = round.levels[0]?.label;
-  const rightLabel = round.levels[round.levels.length - 1]?.label;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, x: 40 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -40 }}
-      transition={{ duration: 0.3 }}
-      className="flex flex-col"
-    >
+    <div className="flex flex-col">
+      {/* Context line */}
+      <p className="mb-3 text-sm sm:text-base italic text-text-muted/70">
+        {interpolate(round.context, agentName)}
+      </p>
+
       {/* Hero agent message card */}
       {humorGate !== 'asking' && (
         <AgentMessageCard
@@ -461,103 +511,34 @@ function SliderContent({
               ? interpolate('{agent} is waiting for you to reach out.', agentName)
               : level.preview
           }
-          messageKey={value}
           isEmpty={isEmptyPreview}
         />
       )}
 
       {/* Humor interstitial */}
-      <AnimatePresence>
-        {humorGate === 'asking' && round.level5Warning && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            className="rounded-2xl border border-border-subtle bg-bg-deep p-5 text-center"
-          >
-            <span className="mb-2 block text-3xl">😈</span>
-            <p className="mb-4 text-sm text-text-secondary">
-              {interpolate(round.level5Warning, agentName)}
-            </p>
-            <div className="flex gap-3 justify-center">
-              <button
-                onClick={onConfirmHumor}
-                className="rounded-full bg-accent px-5 py-2 text-sm font-semibold text-bg-deep"
-              >
-                Show me 😈
-              </button>
-              <button
-                onClick={onDeclineHumor}
-                className="rounded-full border border-border-subtle px-5 py-2 text-sm font-medium text-text-secondary hover:text-text-primary"
-              >
-                Maybe not
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Current level label */}
-      {humorGate !== 'asking' && (
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={value}
-            initial={{ opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.2 }}
-            className="mt-5 text-center"
-          >
-            <span className="text-sm font-semibold text-accent">{level?.label}</span>
-          </motion.div>
-        </AnimatePresence>
-      )}
-
-      {/* Chunky slider */}
-      {humorGate !== 'asking' && (
-        <div className="mt-4">
-          <div className="mb-2 flex justify-between px-1">
-            <span className="text-[10px] text-text-muted/60">{leftLabel}</span>
-            <span className="text-[10px] text-text-muted/60">{rightLabel}</span>
-          </div>
-
-          <div className="relative mx-auto h-11 px-1">
-            <div className="absolute top-1/2 left-1 right-1 h-[6px] -translate-y-1/2 rounded-full bg-border-subtle" />
-            <motion.div
-              className="absolute top-1/2 left-1 h-[6px] -translate-y-1/2 rounded-full bg-accent"
-              initial={false}
-              animate={{ width: `${((value - 1) / 4) * 100}%` }}
-              transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-            />
-            <div className="relative flex h-full items-center justify-between">
-              {round.levels.map((_, i) => {
-                const isActive = i + 1 === value;
-                const isFilled = i + 1 <= value;
-                return (
-                  <motion.button
-                    key={i}
-                    onClick={() => onSliderChange(i + 1)}
-                    animate={{
-                      width: isActive ? 28 : 14,
-                      height: isActive ? 28 : 14,
-                    }}
-                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                    className={cn(
-                      'relative z-10 rounded-full',
-                      isActive
-                        ? 'bg-accent shadow-glow-sm'
-                        : isFilled
-                          ? 'bg-accent'
-                          : 'bg-border-visible'
-                    )}
-                  />
-                );
-              })}
-            </div>
+      {humorGate === 'asking' && round.level5Warning && (
+        <div className="rounded-2xl border border-border-subtle bg-bg-deep p-5 sm:p-6 text-center">
+          <span className="mb-2 block text-3xl">😈</span>
+          <p className="mb-4 text-sm sm:text-base text-text-secondary">
+            {interpolate(round.level5Warning, agentName)}
+          </p>
+          <div className="flex gap-3 justify-center">
+            <button
+              onClick={onConfirmHumor}
+              className="rounded-xl bg-accent px-5 py-2.5 text-sm font-semibold text-bg-deep"
+            >
+              Show me 😈
+            </button>
+            <button
+              onClick={onDeclineHumor}
+              className="rounded-xl border border-border-subtle px-5 py-2.5 text-sm font-medium text-text-secondary hover:text-text-primary"
+            >
+              Maybe not
+            </button>
           </div>
         </div>
       )}
-    </motion.div>
+    </div>
   );
 }
 
@@ -591,8 +572,8 @@ function SummaryContent({
       exit={{ opacity: 0, y: -20 }}
       className="flex flex-col items-center"
     >
-      <div className="w-full rounded-2xl border border-border-subtle bg-bg-elevated p-5">
-        <p className="mb-4 text-center text-sm font-semibold text-text-muted">
+      <div className="w-full rounded-2xl border border-border-subtle bg-bg-elevated p-4 sm:p-5">
+        <p className="mb-3 sm:mb-4 text-center text-sm font-semibold text-text-muted">
           {agentName}&apos;s personality
         </p>
         <div className="space-y-2">
@@ -655,7 +636,7 @@ function TweakContent({
                   <span className="text-sm">{dimensionIcons[round.dimension] || '•'}</span>
                   <span className="text-xs font-medium text-text-muted">{round.dimension}</span>
                 </div>
-                <div className="flex rounded-full border border-border-subtle bg-bg-elevated p-0.5">
+                <div className="flex rounded-xl border border-border-subtle bg-bg-elevated p-0.5">
                   {(['A', 'B'] as const).map((letter) => {
                     const label = letter === 'A' ? round.labelA : round.labelB;
                     const isActive = current === letter;
@@ -664,7 +645,7 @@ function TweakContent({
                         key={letter}
                         onClick={() => onChoice({ round: round.id, choice: letter, value: null })}
                         className={cn(
-                          'flex-1 rounded-full py-1.5 text-xs font-medium transition-all duration-200',
+                          'flex-1 rounded-[10px] py-2 text-xs sm:text-sm font-medium transition-all duration-200',
                           isActive
                             ? 'bg-accent text-bg-deep'
                             : 'text-text-muted hover:text-text-primary'
@@ -691,27 +672,22 @@ function TweakContent({
                   {round.levels[currentVal - 1]?.label}
                 </span>
               </div>
-              <div className="flex items-center gap-1">
-                {round.levels.map((_, i) => {
+              <div className="flex flex-wrap gap-1.5">
+                {round.levels.map((lvl, i) => {
                   const pos = i + 1;
                   const isActive = pos === currentVal;
-                  const isFilled = pos <= currentVal;
                   return (
                     <button
                       key={i}
                       onClick={() => onChoice({ round: round.id, choice: null, value: pos })}
-                      className="flex-1 flex justify-center py-1"
+                      className={cn(
+                        'rounded-lg px-2.5 py-1.5 text-[11px] sm:text-xs font-medium transition-all duration-200',
+                        isActive
+                          ? 'bg-accent text-bg-deep'
+                          : 'border border-border-subtle bg-bg-surface text-text-muted hover:border-accent/30 hover:text-text-primary'
+                      )}
                     >
-                      <div
-                        className={cn(
-                          'rounded-full transition-all duration-200',
-                          isActive
-                            ? 'h-4 w-4 bg-accent'
-                            : isFilled
-                              ? 'h-2.5 w-2.5 bg-accent/60'
-                              : 'h-2.5 w-2.5 bg-border-subtle'
-                        )}
-                      />
+                      {lvl.label}
                     </button>
                   );
                 })}

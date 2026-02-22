@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import type { ConversationMessage, UserProfile } from '../../../lib/types/wizard';
-import { sendOnboardingMessage } from '../../../lib/data/wizard';
+import { sendChatMessage } from '../../../lib/data/wizard';
+import type { OnboardingContext, ChatStatus } from '../../../lib/data/wizard';
 import ChatBubble from '../../ui/ChatBubble';
 import TypingIndicator from '../../ui/TypingIndicator';
 import { cn } from '../../../lib/utils';
@@ -11,42 +13,28 @@ interface ConversationStepProps {
   channel: string;
   messages: ConversationMessage[];
   conversationDone: boolean;
+  agentContext: OnboardingContext;
   onAddMessage: (msg: ConversationMessage) => void;
   onDone: (done: boolean, profile: UserProfile | null) => void;
   onNext: () => void;
 }
 
-const REPLY_LETTERS = ['A', 'B', 'C', 'D'];
-const REPLY_COLORS = [
-  'border-accent/40 hover:border-accent hover:bg-accent/10',
-  'border-purple-500/40 hover:border-purple-500 hover:bg-purple-500/10',
-  'border-emerald-500/40 hover:border-emerald-500 hover:bg-emerald-500/10',
-  'border-sky-500/40 hover:border-sky-500 hover:bg-sky-500/10',
-];
-const REPLY_BADGE_COLORS = [
-  'bg-accent/20 text-accent',
-  'bg-purple-500/20 text-purple-400',
-  'bg-emerald-500/20 text-emerald-400',
-  'bg-sky-500/20 text-sky-400',
-];
-
 export default function ConversationStep({
   sessionId,
-  channel,
   messages,
   conversationDone,
+  agentContext,
   onAddMessage,
   onDone,
   onNext,
 }: ConversationStepProps) {
+  const navigate = useNavigate();
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [quickReplies, setQuickReplies] = useState<string[]>([]);
-  const [selected, setSelected] = useState<number | null>(null);
+  const [lastStatus, setLastStatus] = useState<ChatStatus>('active');
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const initRef = useRef(false);
 
   const scrollToBottom = useCallback(() => {
     if (scrollRef.current) {
@@ -56,63 +44,40 @@ export default function ConversationStep({
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, loading, quickReplies, scrollToBottom]);
+  }, [messages, loading, scrollToBottom]);
 
-  // Auto-greet on mount if no messages yet
-  useEffect(() => {
-    if (initRef.current || messages.length > 0 || conversationDone) return;
-    initRef.current = true;
+  // First user message sends context to n8n, subsequent ones don't
+  const isFirstUserMessage = messages.length === 0;
 
-    const greet = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const greeting: ConversationMessage = {
-          role: 'user',
-          content: 'Hi, I just signed up!',
-        };
-        const res = await sendOnboardingMessage(sessionId, [greeting], channel);
-        const assistantMsg: ConversationMessage = {
-          role: 'assistant',
-          content: res.reply,
-        };
-        onAddMessage(assistantMsg);
-        setQuickReplies(res.quickReplies || []);
-        if (res.done) {
-          onDone(true, res.profile);
-        }
-      } catch {
-        setError('Could not connect to the assistant. You can skip this step.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    greet();
-  }, [sessionId, channel, messages.length, conversationDone, onAddMessage, onDone]);
+  const hardcodedGreeting = `Hey! I'm ${agentContext.agentName}. Before we get started — what's your name and what do you do?`;
 
   const send = useCallback(
     async (text: string) => {
-      if (!text.trim() || loading || conversationDone) return;
+      if (!text.trim() || loading) return;
 
       const userMsg: ConversationMessage = { role: 'user', content: text.trim() };
       onAddMessage(userMsg);
       setInput('');
-      setQuickReplies([]);
-      setSelected(null);
       setLoading(true);
       setError(null);
 
       try {
-        const allMessages = [...messages, userMsg];
-        const res = await sendOnboardingMessage(sessionId, allMessages, channel);
+        const res = await sendChatMessage(
+          sessionId,
+          text.trim(),
+          isFirstUserMessage ? agentContext : undefined
+        );
+
         const assistantMsg: ConversationMessage = {
           role: 'assistant',
-          content: res.reply,
+          content: res.message,
         };
         onAddMessage(assistantMsg);
-        setQuickReplies(res.quickReplies || []);
-        if (res.done) {
-          onDone(true, res.profile);
+        setLastStatus(res.status);
+
+        if (res.status === 'complete') {
+          onDone(true, null);
+          setTimeout(() => onNext(), 1500);
         }
       } catch {
         setError('Something went wrong. Try again or skip this step.');
@@ -121,7 +86,7 @@ export default function ConversationStep({
         inputRef.current?.focus();
       }
     },
-    [loading, conversationDone, messages, sessionId, channel, onAddMessage, onDone]
+    [loading, isFirstUserMessage, sessionId, agentContext, onAddMessage, navigate]
   );
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -129,24 +94,68 @@ export default function ConversationStep({
     send(input);
   };
 
-  const handleCardClick = (index: number, text: string) => {
-    setSelected(index);
-    // Small delay so the user sees the selection highlight before it sends
-    setTimeout(() => send(text), 200);
+  const handleConfirm = () => {
+    send('Confirm');
+  };
+
+  const handleCancel = () => {
+    const cancelMsg: ConversationMessage = { role: 'user', content: 'Cancel' };
+    onAddMessage(cancelMsg);
+    const agentReply: ConversationMessage = {
+      role: 'assistant',
+      content: 'No worries! Is there something wrong, or is there something else you want to mention?',
+    };
+    onAddMessage(agentReply);
+    setLastStatus('active');
   };
 
   const handleSkip = () => {
+    // Notify webhook that the interview was skipped
+    const payload: Record<string, unknown> = { sessionId, message: '', skipped: true };
+    const stripeSessionId = localStorage.getItem('stripe_session_id');
+    if (stripeSessionId) {
+      payload.stripeSessionId = stripeSessionId;
+    }
+    if (isFirstUserMessage) {
+      payload.context = agentContext;
+    }
+    fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    }).catch((err) => console.error('[chat] Skip notify failed:', err));
+
     onDone(true, null);
     onNext();
   };
 
-  // Decide if quick replies should render as cards (longer text) or chips (short text)
-  const useCards = quickReplies.length > 0 && quickReplies.some((qr) => qr.length > 30);
+  // Hide input when confirming (show buttons instead) or complete
+  const showInput = lastStatus === 'active' && !conversationDone;
+  const showConfirmButtons = lastStatus === 'confirming' && !loading;
 
   return (
     <div className="flex flex-col h-full">
+      {/* Interview intro */}
+      {messages.length === 0 && !conversationDone && (
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-4 rounded-xl border border-accent/20 bg-accent/5 px-4 py-3 text-center"
+        >
+          <p className="text-sm font-medium text-text-primary">
+            Time for a quick interview
+          </p>
+          <p className="mt-1 text-xs text-text-muted">
+            {agentContext.agentName} wants to get to know you. Just talk naturally — the more you share, the better your agent will understand you.
+          </p>
+        </motion.div>
+      )}
+
       {/* Chat area */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto space-y-1 pb-4 min-h-[280px] max-h-[400px]">
+        {/* Hardcoded first greeting — always visible, no n8n call */}
+        <ChatBubble role="agent" content={hardcodedGreeting} index={0} />
+
         {messages.map((msg, i) => (
           <ChatBubble
             key={i}
@@ -155,7 +164,9 @@ export default function ConversationStep({
             index={0}
           />
         ))}
+
         {loading && <TypingIndicator />}
+
         {error && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -164,12 +175,7 @@ export default function ConversationStep({
           >
             {error}
             <button
-              onClick={() => {
-                setError(null);
-                if (messages.length === 0) {
-                  initRef.current = false;
-                }
-              }}
+              onClick={() => setError(null)}
               className="ml-2 underline hover:text-red-300"
             >
               Retry
@@ -178,99 +184,37 @@ export default function ConversationStep({
         )}
       </div>
 
-      {/* Quick replies — cards for longer options, chips for short ones */}
-      {quickReplies.length > 0 && !conversationDone && !loading && (
-        <div className="pb-3">
-          {useCards ? (
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="grid gap-2"
-            >
-              {quickReplies.map((qr, i) => {
-                const isSelected = selected === i;
-                return (
-                  <motion.button
-                    key={qr}
-                    initial={{ opacity: 0, x: -8 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.06 }}
-                    onClick={() => handleCardClick(i, qr)}
-                    disabled={selected !== null}
-                    className={cn(
-                      'relative w-full rounded-xl border bg-bg-elevated px-4 py-3.5 text-left transition-all duration-200',
-                      'flex items-start gap-3',
-                      isSelected
-                        ? 'border-accent bg-accent/10 ring-1 ring-accent/30 scale-[0.98]'
-                        : REPLY_COLORS[i % REPLY_COLORS.length],
-                      selected !== null && !isSelected && 'opacity-40'
-                    )}
-                  >
-                    <span
-                      className={cn(
-                        'flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-bold',
-                        isSelected ? 'bg-accent/20 text-accent' : REPLY_BADGE_COLORS[i % REPLY_BADGE_COLORS.length]
-                      )}
-                    >
-                      {REPLY_LETTERS[i] || i + 1}
-                    </span>
-                    <span className="text-sm leading-relaxed text-text-primary">
-                      {qr}
-                    </span>
-                    {isSelected && (
-                      <motion.span
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        className="absolute right-3 top-1/2 -translate-y-1/2"
-                      >
-                        <svg className="h-5 w-5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                        </svg>
-                      </motion.span>
-                    )}
-                  </motion.button>
-                );
-              })}
-            </motion.div>
-          ) : (
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex flex-wrap gap-2"
-            >
-              {quickReplies.map((qr, i) => (
-                <motion.button
-                  key={qr}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: i * 0.05 }}
-                  onClick={() => send(qr)}
-                  className={cn(
-                    'rounded-full border border-border-subtle px-4 py-2 text-sm font-medium transition-all duration-200',
-                    'text-text-secondary hover:border-accent hover:text-accent hover:bg-accent/10',
-                    'active:scale-95'
-                  )}
-                >
-                  {qr}
-                </motion.button>
-              ))}
-            </motion.div>
-          )}
-        </div>
+      {/* Confirm / Cancel buttons */}
+      {showConfirmButtons && (
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex gap-3 pb-3"
+        >
+          <button
+            onClick={handleConfirm}
+            className={cn(
+              'flex-1 rounded-xl bg-accent px-4 py-2.5 text-sm font-medium text-bg-deep transition',
+              'hover:bg-accent/90'
+            )}
+          >
+            Confirm
+          </button>
+          <button
+            onClick={handleCancel}
+            className={cn(
+              'flex-1 rounded-xl border border-border-subtle px-4 py-2.5 text-sm font-medium text-text-secondary transition',
+              'hover:border-border-visible hover:text-text-primary'
+            )}
+          >
+            Cancel
+          </button>
+        </motion.div>
       )}
 
-      {/* Input / Continue / Skip */}
+      {/* Input / Skip */}
       <div className="pt-2 border-t border-border-subtle">
-        {conversationDone ? (
-          <motion.button
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            onClick={onNext}
-            className="btn-primary w-full justify-center"
-          >
-            Continue
-          </motion.button>
-        ) : (
+        {showInput ? (
           <>
             <form onSubmit={handleSubmit} className="flex gap-2">
               <input
@@ -278,7 +222,7 @@ export default function ConversationStep({
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder={quickReplies.length > 0 ? 'Or type your own answer...' : 'Type your answer...'}
+                placeholder="Type your answer..."
                 disabled={loading}
                 className={cn(
                   'flex-1 rounded-xl border border-border-subtle bg-bg-elevated px-4 py-2.5 text-sm text-text-primary',
@@ -304,7 +248,31 @@ export default function ConversationStep({
               Skip this step
             </button>
           </>
-        )}
+        ) : conversationDone ? (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="py-2"
+          >
+            <button
+              onClick={onNext}
+              className={cn(
+                'w-full rounded-xl bg-accent px-4 py-2.5 text-sm font-medium text-bg-deep transition',
+                'hover:bg-accent/90'
+              )}
+            >
+              Continue
+            </button>
+          </motion.div>
+        ) : lastStatus === 'complete' ? (
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center text-sm text-text-muted py-2"
+          >
+            Redirecting...
+          </motion.p>
+        ) : null}
       </div>
     </div>
   );

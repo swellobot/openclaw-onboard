@@ -26,6 +26,9 @@ export default function SuccessPage() {
             return;
         }
 
+        // Save Stripe session ID so the wizard can send it with the first chat message
+        localStorage.setItem('stripe_session_id', id);
+
         fetch(`/api/checkout-session/${id}`)
             .then((res) => {
                 if (!res.ok) throw new Error('Session not found');

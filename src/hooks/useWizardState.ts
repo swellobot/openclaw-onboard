@@ -51,8 +51,8 @@ function saveProgress(sessionId: string, step: number, state: WizardState) {
   localStorage.setItem(progressKey(sessionId), JSON.stringify(data));
 }
 
-function saveOnboarding(state: WizardState) {
-  const data: OnboardingData = {
+function buildOnboardingData(state: WizardState): OnboardingData {
+  return {
     version: 2,
     sessionId: state.sessionId,
     agent: { name: state.agentName },
@@ -66,9 +66,14 @@ function saveOnboarding(state: WizardState) {
     conversationLog: state.conversationMessages,
     completedAt: new Date().toISOString(),
   };
+}
+
+function saveOnboarding(state: WizardState) {
+  const data = buildOnboardingData(state);
   localStorage.setItem(ONBOARDING_KEY, JSON.stringify(data));
   localStorage.removeItem(progressKey(state.sessionId));
 }
+
 
 export function useWizardState() {
   const { sessionId } = useParams<{ sessionId: string }>();

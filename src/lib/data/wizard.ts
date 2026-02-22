@@ -206,9 +206,9 @@ export const personalityRounds: PersonalityRound[] = [
     context: '{agent} just checked your email overnight...',
     userMessage: 'What happened in my inbox?',
     optionA:
-      '34 new, 6 worth reading. Most important: your accountant needs the receipts by Friday. I drafted a reply.',
+      '34 new emails, 6 worth reading. Most important: your accountant needs receipts by Friday. I drafted a reply.',
     optionB:
-      "You got 34 emails overnight. I cleared out 20 newsletters and promos — unsubscribed from 3 you haven't opened in months. Of the rest, 6 need attention. The most urgent is from your accountant — she's asking for the Q4 receipts by Friday or you'll miss the filing deadline. I drafted a reply confirming you'll send them Thursday. The other 5 are in your priority folder, sorted by deadline.",
+      "34 emails overnight. Cleared 20 newsletters and promos — unsubscribed from 3 you never open. 6 need attention. Most urgent: your accountant wants Q4 receipts by Friday or you'll miss the deadline. I drafted a reply saying you'll send Thursday. Other 5 are in your priority folder, sorted by deadline.",
     confirmA: 'Less noise, more signal 👌',
     confirmB: 'Full context, every time ✍️',
     labelA: 'Concise',
@@ -222,9 +222,9 @@ export const personalityRounds: PersonalityRound[] = [
     context: '{agent} found a problem with your calendar...',
     userMessage: 'Anything I should know about tomorrow?',
     optionA:
-      "Heads up — you double-booked yourself. The dentist and that sales call are both at 2pm. Want me to move the dentist? Also, you told your wife you'd pick up the kids at 4 but your last meeting runs til 4:30. Might want to sort that out.",
+      "Heads up — you double-booked yourself. Dentist and the sales call are both at 2pm. Want me to move the dentist? Also, you told your wife you'd get the kids at 4 but your last meeting runs til 4:30. Might wanna sort that.",
     optionB:
-      "There's a scheduling conflict tomorrow at 2:00 PM — your dental appointment overlaps with the Henderson sales call. I'd recommend rescheduling the dentist. Additionally, your final meeting ends at 4:30 PM, but you have a commitment to pick up the children at 4:00 PM. Would you like me to adjust either?",
+      "Scheduling conflict tomorrow at 2:00 PM — your dental appointment overlaps with the Henderson call. I'd recommend rescheduling the dentist. Also, your final meeting ends at 4:30 PM but you have a 4:00 PM pickup commitment. Want me to adjust?",
     confirmA: 'Keeping it human 😎',
     confirmB: 'Polished and clear ✓',
     labelA: 'Casual',
@@ -241,27 +241,27 @@ export const personalityRounds: PersonalityRound[] = [
       {
         label: 'None',
         preview:
-          "Good morning. Weather is 12 degrees, rain by afternoon. Three meetings today. Portfolio is up 1.2 percent. Your wife's birthday is in 4 days — no reservation yet.",
+          "Good morning. 12 degrees, rain by afternoon. Three meetings today. Portfolio up 1.2 percent. Your wife's birthday is in 4 days — no reservation yet.",
       },
       {
         label: 'Minimal',
         preview:
-          "Good morning. 12°C, rain by afternoon. 3 meetings today. Portfolio up 1.2%. Heads up — your wife's birthday is in 4 days and you haven't booked a restaurant yet.",
+          "Morning. 12°C, rain by afternoon. 3 meetings today. Portfolio up 1.2%. Heads up — wife's birthday in 4 days, no restaurant booked.",
       },
       {
         label: 'Balanced',
         preview:
-          "Morning! ☀️ 12°C today, rain after 3pm.\n3 meetings — busiest at 2pm.\nPortfolio up 1.2% 📈\nReminder: your wife's birthday is in 4 days. No restaurant booked yet — want me to find options?",
+          "Morning! ☀️ 12°C, rain after 3pm.\n3 meetings — busiest at 2pm.\nPortfolio up 1.2% 📈\nWife's birthday in 4 days — no restaurant booked. Want me to find options?",
       },
       {
         label: 'Expressive',
         preview:
-          "Good morning! ☀️🌧️\n12°C now, rain rolls in around 3pm — jacket weather!\n\n📅 3 meetings today, 2pm is the big one\n📈 Portfolio up 1.2% — Tesla doing the heavy lifting\n🎂 Wife's birthday in 4 days!! You still haven't booked anywhere 👀 Want me to find something nice?",
+          "Morning! ☀️🌧️ 12°C, rain around 3pm — grab a jacket.\n📅 3 meetings, 2pm is the big one\n📈 Portfolio up 1.2%\n🎂 Wife's birthday in 4 days!! Still no reservation 👀 Want me to find somewhere?",
       },
       {
         label: 'Full vibes',
         preview:
-          "Rise and shine! ☀️🌧️☕\n\nHere's your day:\n📅 3 meetings (2pm = game time 🎯)\n📈 Portfolio vibing — up 1.2% 🟢🚀\n🌡️ 12°C → rain at 3pm, don't forget the jacket!\n🎂🚨 WIFE'S BIRTHDAY IN 4 DAYS 🚨\nNo restaurant. No gift. No plan. You're living dangerously 😅\nWant me to save you? 🙏",
+          "Rise and shine! ☀️🌧️☕\n📅 3 meetings (2pm = game time 🎯)\n📈 Portfolio up 1.2% 🟢🚀\n🌡️ 12°C → rain at 3pm, jacket!\n🎂🚨 WIFE'S BIRTHDAY IN 4 DAYS 🚨\nNo restaurant. No gift. No plan. You're living dangerously 😅\nWant me to save you? 🙏",
       },
     ],
   },
@@ -273,32 +273,32 @@ export const personalityRounds: PersonalityRound[] = [
     context: '{agent} just noticed you overspent this month...',
     defaultValue: 2,
     level5Warning:
-      'Level 5 means {agent} has no filter. Think: that one friend who roasts you but always has your back.',
+      'Level 5 means {agent} has absolutely no filter. Think: that friend who roasts the shit out of you but always has your back.',
     levels: [
       {
         label: 'Straight',
         preview:
-          "Your spending this month is 23% over budget. Dining out accounts for most of the increase. Subscriptions are also above target. Here's a breakdown.",
+          "You're 23% over budget this month. Dining out is the main driver. You also have 3 unused subscriptions. Here's the breakdown.",
       },
       {
         label: 'Dry',
         preview:
-          "You're 23% over budget. Restaurants are the main culprit — 14 transactions. You also have 3 subscriptions you haven't used since January. Might be worth a look.",
+          "23% over budget. Restaurants are the main culprit — 14 transactions. You also have 3 subscriptions you haven't touched since January. Worth a look.",
       },
       {
         label: 'Witty',
         preview:
-          "So... you're 23% over budget. Turns out eating out 14 times adds up — who knew? You're also paying for 3 subscriptions you forgot exist. The gym, by the way, is one of them. Want me to cancel the ones collecting dust?",
+          "So... 23% over budget. Turns out eating out 14 times adds up. You're also paying for 3 subscriptions you forgot exist — including the gym. Want me to cancel the dead weight?",
       },
       {
         label: 'Playful',
         preview:
-          "Budget update: we have a situation 🚨 You're 23% over and honestly, the restaurants are out of control — 14 times this month! Your Uber Eats driver probably knows your dog's name by now. Oh, and you're paying for a gym you haven't visited since the New Year's resolution era. Permission to cancel the ghosts?",
+          "Budget check: you're 23% over and honestly the restaurant habit is getting ridiculous — 14 times this month. Your Uber Eats driver knows your dog's name at this point. Oh, and you're still paying for a gym you haven't stepped into since January. Want me to cut the dead weight?",
       },
       {
-        label: 'Unhinged',
+        label: 'No filter',
         preview:
-          "Alright, budget check. You're 23% over. Again. Fourteen restaurant trips — you're basically a food blogger at this point, except you're not getting paid. You're still paying for that gym membership, which at this rate is the most expensive coat rack in Lithuania. And Spotify Premium Family? Bro, you live alone. Want me to stop the bleeding or should we just lean into financial chaos?",
+          "OK so budget update: you're 23% over. Again. Fourteen restaurant trips — you're spending money like you're trying to get rid of it. You're still paying for that gym membership, which is basically the most expensive thing you never use. And Spotify Family? You live alone. Who the fuck is on your family plan? Want me to cancel this shit or are we just watching the money burn?",
       },
     ],
   },
@@ -317,22 +317,22 @@ export const personalityRounds: PersonalityRound[] = [
       {
         label: 'Light nudges',
         preview:
-          'Quick reminder: car insurance renews Thursday. Last year you paid €840.',
+          'Reminder: car insurance renews Thursday. Last year you paid €840.',
       },
       {
         label: 'Helpful reminders',
         preview:
-          "Hey — your car insurance renews Thursday. Last year you paid €840. I checked and your current provider increased rates by 12%. Want me to look at alternatives?",
+          "Car insurance renews Thursday. Last year: €840, but your provider raised rates 12%. Want me to look at alternatives?",
       },
       {
         label: 'Thinks ahead',
         preview:
-          "Your car insurance renews Thursday. Last year: €840, but they bumped it to €940 this year. I found 3 cheaper options — best one saves you €180/year with the same coverage. I also noticed your roadside assistance expired last month. Want me to bundle that in?",
+          "Car insurance renews Thursday — they bumped it from €840 to €940. I found 3 cheaper options, best one saves €180/year, same coverage. Your roadside assistance also expired. Want me to bundle it?",
       },
       {
         label: 'Runs your life',
         preview:
-          "Took care of a few things:\n→ Car insurance renews Thursday. Your provider raised prices 12% so I found a better deal — same coverage, saves €180/year. Comparison attached. Just need your OK to switch.\n→ Your roadside assistance expired — added it to the new quote.\n→ Also: you're low on coffee pods (based on your last order 3 weeks ago). Reorder?\n→ Friday looks empty — want me to book that restaurant your wife mentioned?",
+          "Took care of a few things:\n→ Car insurance renewed Thursday at a worse rate, so I found a better deal — saves €180/year, same coverage. Just need your OK to switch.\n→ Roadside assistance expired — added it to the new quote.\n→ You're low on coffee pods. Reorder?\n→ Friday's empty — want me to book that restaurant your wife mentioned?",
       },
     ],
   },
@@ -347,27 +347,27 @@ export const personalityRounds: PersonalityRound[] = [
       {
         label: 'Just facts',
         preview:
-          "Here are 5 laptops in your budget range. Specs comparison attached. The MacBook Air has the longest battery life. The ThinkPad has the best keyboard ratings. The Dell has the most ports.",
+          "5 laptops in your budget. MacBook Air has the best battery. ThinkPad has the best keyboard. Dell has the most ports. Comparison attached.",
       },
       {
         label: 'Leans neutral',
         preview:
-          "Found 5 options. The MacBook Air and ThinkPad X1 stand out for your use case — long battery life and portability. Both are well-reviewed. Here's a full comparison.",
+          "5 options. MacBook Air and ThinkPad X1 stand out — long battery, portable, well-reviewed. Full comparison attached.",
       },
       {
         label: 'Soft suggestions',
         preview:
-          "I'd lean toward the MacBook Air for you — the battery life is unmatched and since you mostly use browser-based tools, the ecosystem won't be an issue. But the ThinkPad is solid if you prefer Windows. Want a deeper comparison of just those two?",
+          "I'd lean MacBook Air — battery life is unmatched, and since you mostly use browser tools, the ecosystem won't matter. ThinkPad is solid if you prefer Windows. Want me to compare just those two?",
       },
       {
         label: 'Clear opinions',
         preview:
-          "Get the MacBook Air. Seriously. Best battery life in the category, it's fast enough for everything you do, and the resale value is way better than the alternatives. The ThinkPad is fine but you'll miss the trackpad and battery within a week. Unless you need specific Windows software — do you?",
+          "Get the MacBook Air. Best battery in the category, fast enough for everything you do, better resale value. The ThinkPad is fine but you'll miss the trackpad within a week. Unless you need Windows software?",
       },
       {
         label: 'Decides for you',
         preview:
-          "I'd go MacBook Air M3, 16GB, 512GB — the €1,449 config. It's the best laptop for how you work and it's not even close. I found it for €1,329 at this store with next-day delivery. Should I order it?",
+          "MacBook Air M3, 16GB, 512GB — the €1,449 one. Best laptop for how you work, not even close. Found it for €1,329 with next-day delivery. Should I order it?",
       },
     ],
   },
@@ -378,11 +378,11 @@ export const personalityRounds: PersonalityRound[] = [
     dimension: 'Style',
     context: 'You just told {agent} you want to skip your savings this month to buy something...',
     userMessage:
-      "I'm thinking of skipping my savings deposit this month. I want to buy that new TV.",
+      "I'm thinking of skipping savings this month. I want to buy that new TV.",
     optionA:
-      "Hold on — you skipped saving last month too, and you're €1,200 behind your annual goal. The TV is €899 and it'll still be there next month. What if you saved this month and bought it in March? You'd be back on track AND get the TV. Or I can find it refurbished for less.",
+      "You skipped last month too — you're €1,200 behind your goal. The TV is €899 and it's not going anywhere. Save this month, buy it in March, and you're back on track. Or I can find it refurbished for less.",
     optionB:
-      "Makes sense — sometimes you need to enjoy your money. The TV is a good one, I checked the reviews. Want me to find the best price? I'll adjust your savings plan to spread the missed month across the next few.",
+      "Fair enough — sometimes you should enjoy your money. Good TV by the way, I checked. Want me to find the best price? I'll spread the missed savings across the next few months.",
     confirmA: '{agent} will keep you honest 💪',
     confirmB: '{agent} has your back, always 🤝',
     labelA: 'Challenges you',
@@ -416,42 +416,50 @@ export const configFiles = [
   { name: 'encryption-keys.pem', status: 'generated' },
 ];
 
-// --- n8n webhook ---
+// --- n8n webhook (routed through backend for auth) ---
 
-const WEBHOOK_URL = import.meta.env.VITE_N8N_WEBHOOK_URL as string | undefined;
-
-export interface WebhookResponse {
-  reply: string;
-  done: boolean;
-  profile: {
-    name: string;
-    work: string;
-    useCases: string[];
-    communicationStyle: string;
-    interests: string[];
-    notes: string;
-  } | null;
-  quickReplies: string[];
+export interface OnboardingContext {
+  agentName: string;
+  selectedScenarios: string[];
+  personality: PersonalityChoice[];
 }
 
-export async function sendOnboardingMessage(
+export type ChatStatus = 'active' | 'confirming' | 'complete';
+
+export interface ChatResponse {
+  message: string;
+  status: ChatStatus;
+}
+
+export async function sendChatMessage(
   sessionId: string,
-  messages: ConversationMessage[],
-  channel: string
-): Promise<WebhookResponse> {
-  if (!WEBHOOK_URL) {
-    throw new Error('VITE_N8N_WEBHOOK_URL is not configured');
+  message: string,
+  context?: OnboardingContext
+): Promise<ChatResponse> {
+  const payload: Record<string, unknown> = { sessionId, message };
+  if (context) {
+    payload.context = context;
+    // Attach the Stripe checkout session ID on the first message so the backend can link accounts
+    const stripeSessionId = localStorage.getItem('stripe_session_id');
+    if (stripeSessionId) {
+      payload.stripeSessionId = stripeSessionId;
+    }
   }
 
-  const res = await fetch(WEBHOOK_URL, {
+  const res = await fetch('/api/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ sessionId, messages, channel }),
+    body: JSON.stringify(payload),
   });
 
   if (!res.ok) {
-    throw new Error(`Webhook error: ${res.status}`);
+    throw new Error(`Chat error: ${res.status}`);
   }
 
-  return res.json();
+  const data = await res.json();
+  // n8n returns an array — grab the first item
+  if (Array.isArray(data)) {
+    return data[0] as ChatResponse;
+  }
+  return data as ChatResponse;
 }

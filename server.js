@@ -88,6 +88,110 @@ app.get('/api/checkout-session/:sessionId', async (req, res) => {
     }
 });
 
+// ── Chat with n8n ───────────────────────────────────────────────────
+app.post('/api/chat', async (req, res) => {
+    try {
+        const webhookUrl = process.env.WEBHOOK_CHAT;
+        const chatSecret = process.env.CHAT_SECRET;
+
+        if (!webhookUrl || !chatSecret) {
+            return res.status(500).json({ error: 'WEBHOOK_CHAT or CHAT_SECRET not configured' });
+        }
+
+        const payload = req.body;
+        console.log('[chat] Sending to n8n:', JSON.stringify(payload, null, 2));
+
+        const n8nRes = await fetch(webhookUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-API-Key': chatSecret,
+            },
+            body: JSON.stringify(payload),
+        });
+
+        const responseText = await n8nRes.text();
+        console.log('[chat] n8n status:', n8nRes.status);
+        console.log('[chat] n8n raw response:', responseText);
+
+        if (!n8nRes.ok) {
+            return res.status(n8nRes.status).json({ error: `n8n error: ${n8nRes.status}`, details: responseText });
+        }
+
+        let data;
+        try {
+            data = JSON.parse(responseText);
+        } catch {
+            // n8n returned non-JSON — wrap it as a reply
+            data = { reply: responseText, done: false, profile: null, quickReplies: [] };
+        }
+        console.log('[chat] n8n parsed response:', JSON.stringify(data, null, 2));
+
+        res.json(data);
+    } catch (error) {
+        console.error('[chat] Error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// ── Notify VPS (send session + email) ─────────────────────────────
+app.post('/api/notify-vps', async (req, res) => {
+    try {
+        const webhookUrl = process.env.WEBHOOK_VPS;
+        const vpsSecret = process.env.VPS_SECRET;
+
+        if (!webhookUrl || !vpsSecret) {
+            return res.status(500).json({ error: 'WEBHOOK_VPS or VPS_SECRET not configured' });
+        }
+
+        const { sessionId, email, stripeSessionId, agentName, channel, selectedScenarios, personality } = req.body;
+
+        if (!sessionId || !email) {
+            return res.status(400).json({ error: 'sessionId and email are required' });
+        }
+
+        const payload = {
+            sessionId,
+            email,
+            stripeSessionId: stripeSessionId || null,
+            agentName: agentName || null,
+            channel: channel || null,
+            selectedScenarios: selectedScenarios || [],
+            personality: personality || [],
+        };
+        console.log('[vps] Sending to webhook:', JSON.stringify(payload));
+
+        const n8nRes = await fetch(webhookUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-API-Key': vpsSecret,
+            },
+            body: JSON.stringify(payload),
+        });
+
+        const responseText = await n8nRes.text();
+        console.log('[vps] Webhook status:', n8nRes.status);
+        console.log('[vps] Webhook raw response:', responseText);
+
+        if (!n8nRes.ok) {
+            return res.status(n8nRes.status).json({ error: `VPS webhook error: ${n8nRes.status}`, details: responseText });
+        }
+
+        let data;
+        try {
+            data = JSON.parse(responseText);
+        } catch {
+            data = { success: true };
+        }
+
+        res.json(data);
+    } catch (error) {
+        console.error('[vps] Error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`API server running on http://localhost:${PORT}`);
 });
