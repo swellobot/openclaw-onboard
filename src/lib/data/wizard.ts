@@ -1,4 +1,4 @@
-import type { MessagingChannel, ConversationMessage, PersonalityChoice } from '../types/wizard';
+import type { MessagingChannel, PersonalityChoice } from '../types/wizard';
 
 // --- Channel options (WhatsApp + Telegram only) ---
 

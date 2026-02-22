@@ -10,7 +10,6 @@ interface SessionData {
 
 export default function SuccessPage() {
     const navigate = useNavigate();
-    const [sessionId, setSessionId] = useState<string | null>(null);
     const [session, setSession] = useState<SessionData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -18,8 +17,6 @@ export default function SuccessPage() {
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
         const id = params.get('session_id');
-        setSessionId(id);
-
         if (!id) {
             setLoading(false);
             setError('No session ID found. Please complete checkout first.');

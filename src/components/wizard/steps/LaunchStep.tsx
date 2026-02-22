@@ -17,7 +17,6 @@ interface LaunchStepProps {
 
 export default function LaunchStep({
   agentName,
-  userName,
   channel,
   sessionId,
   selectedScenarios,
